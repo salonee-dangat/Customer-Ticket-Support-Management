@@ -11,7 +11,7 @@ const app = express();
 app.use(express.json());
 app.use(cors()); // allow frontend to access backend
 
-app.use("/api/auth", require("./routes/auth"));
+app.use("/api/auth", require("./routes/auth"))
 
 // 4 Example Users (Today’s Task)
 const exampleUsers = [
