@@ -9,47 +9,61 @@ const app = express();
 
 // 3 Middleware
 app.use(express.json());
-app.use(cors()); // allow frontend to access backend
+app.use(cors());
 
-app.use("/api/auth", require("./routes/auth"))
+// 4 Import Models
+const User = require("./models/User");
 
-// 4 Example Users (Today’s Task)
-const exampleUsers = [
-  { _id: 1, name: "Neha", email: "neha@example.com", role: "admin" },
-  { _id: 2, name: "Saloni", email: "saloni12@example.com", role: "user" },
-];
+// 5 Auth Routes
+app.use("/api/auth", require("./routes/auth"));
 
-// 5 User Routes
-app.get("/api/users", (req, res) => {
-  res.json(exampleUsers);
-});
-
-// 6 Example Tickets (Yesterday’s Task)
+// 6 Demo Tickets (temporary – until DB tickets are added)
 const tickets = [
   { _id: 101, title: "Login Issue", status: "created" },
   { _id: 102, title: "Page not loading", status: "created" },
 ];
 
-// GET tickets
+// 7 USERS API (FETCH REAL USERS FROM MONGODB)
+app.get("/api/users", async (req, res) => {
+  try {
+    const users = await User.find({}, "_id name email role");
+    res.json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error fetching users" });
+  }
+});
+
+// 8 GET tickets
 app.get("/api/tickets", (req, res) => {
   res.json(tickets);
 });
 
-// POST ticket
+// 9 POST ticket
 app.post("/api/tickets", (req, res) => {
   const { title } = req.body;
-  const newTicket = { _id: Date.now(), title, status: "created" };
+
+  if (!title) {
+    return res.status(400).json({ message: "Title is required" });
+  }
+
+  const newTicket = {
+    _id: Date.now(),
+    title,
+    status: "created",
+  };
+
   tickets.push(newTicket);
   res.json(newTicket);
 });
 
-// 7 Connect to MongoDB (optional for demo)
+// 10 Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URL)
-  .then(() => console.log("MongoDB Connected"))
-  .catch((err) => console.log(err));
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) => console.log("❌ MongoDB Error:", err));
 
-// 8 Start server
+// 11 Start server
 app.listen(5050, () => {
-  console.log("Server running on port 5050");
+  console.log("🚀 Server running on port 5050");
 });

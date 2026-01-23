@@ -1,44 +1,100 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100 px-4">
-      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl">
-        
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
-          Welcome Back 👋
-        </h2>
+  const router = useRouter();
 
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!formData.email || !formData.password) {
+      setError("Please enter email and password.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const res = await fetch("http://localhost:5050/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Login failed");
+        return;
+      }
+
+      // Save token to localStorage
+      localStorage.setItem("token", data.token);
+
+      // Redirect to tickets/dashboard
+      router.push("/tickets");
+    } catch (err) {
+      setError("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 px-4">
+      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl">
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
+          Login 🔐
+        </h2>
         <p className="text-center text-gray-500 mb-6">
-          Login to your account
+          Welcome back! Please login to continue
         </p>
 
-        <form className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+
           <input
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
             type="email"
             placeholder="Email Address"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400"
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
 
           <input
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
             type="password"
             placeholder="Password"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400"
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition disabled:opacity-50"
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
         <p className="text-center text-sm mt-6 text-gray-600">
           Don’t have an account?{" "}
-          <Link href="/register" className="text-pink-600 font-medium hover:underline">
+          <Link href="/register" className="text-indigo-600 font-medium hover:underline">
             Register
           </Link>
         </p>
