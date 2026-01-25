@@ -10,7 +10,7 @@ export default function AdminLayout({
       style={{
         display: "flex",
         minHeight: "100vh",
-        backgroundColor: "#a0237d",
+        backgroundColor: "#503d4a",
       }}
     >
       {/* sidebar */}

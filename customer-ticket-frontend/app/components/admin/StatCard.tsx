@@ -14,7 +14,7 @@ export default function StatCard({
         boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
       }}
     >
-      <h3 style={{ fontSize: "14px", color: "#355fb4" }}>
+      <h3 style={{ fontSize: "24px", color: "#070707" }}>
         {title}
       </h3>
       <p style={{ fontSize: "24px", fontWeight: "bold" }}>
