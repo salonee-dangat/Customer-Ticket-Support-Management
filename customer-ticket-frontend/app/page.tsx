@@ -54,7 +54,7 @@ export default function HomePage() {
     />
     <button onClick={handleCreate}>Create Ticket</button>
 
-    {/* TICKETS LIST */}
+    
     <h2>Tickets</h2>
     <ul>
       {tickets.map((ticket) => (
@@ -62,7 +62,7 @@ export default function HomePage() {
       ))}
     </ul>
 
-    {/* USERS LIST – TODAY’S TASK */}
+    
     <h2>Users</h2>
     <ul>
       {users.map((user) => (
@@ -74,3 +74,4 @@ export default function HomePage() {
   </div>
 );
 }
+
