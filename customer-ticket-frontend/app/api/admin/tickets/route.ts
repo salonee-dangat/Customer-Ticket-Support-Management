@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
-import Ticket from "@/models/Ticket";
+import { connectDB } from "@lib/mongodb";
+import Ticket from "@/models/ticket";  
+
 
 // GET: All tickets
 export async function GET() {

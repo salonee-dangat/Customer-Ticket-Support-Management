@@ -1,24 +1,38 @@
-import StatCard from "../components/admin/StatCard";
+"use client";
 
-export default function AdminDashboard() {
+import { useEffect, useState } from "react";
+
+type User = {
+  _id: string;
+  email: string;
+  role: string;
+};
+
+export default function AdminUsersPage() {
+  const [users, setUsers] = useState<User[]>([]);
+
+  const fetchUsers = async () => {
+    const res = await fetch("/api/admin/users");
+    const data = await res.json();
+    setUsers(data);
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
   return (
     <div style={{ padding: "24px" }}>
       <h1 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "24px" }}>
-        Admin Dashboard
+        Manage Users
       </h1>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: "16px",
-        }}
-      >
-        <StatCard title="Total Tickets" value={120} />
-        <StatCard title="Open Tickets" value={45} />
-        <StatCard title="In Progress" value={30} />
-        <StatCard title="Closed Tickets" value={45} />
-      </div>
+      <ul>
+        {users.map((u) => (
+          <li key={u._id}>
+            {u.role.charAt(0).toUpperCase() + u.role.slice(1)} – {u.email}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

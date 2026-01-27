@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 type Ticket = {
-  id: number;
+  _id: string;
   title: string;
   status: string;
   priority: string;
@@ -29,8 +29,8 @@ export default function TicketTable() {
     fetchTickets();
   }, []);
 
-  // Update ticket status
-  const updateStatus = async (id: number, status: string) => {
+  // Update ticket status dynamically
+  const updateStatus = async (id: string, status: string) => {
     await fetch("/api/admin/tickets", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -39,8 +39,8 @@ export default function TicketTable() {
     fetchTickets();
   };
 
-  // Delete ticket
-  const deleteTicket = async (id: number) => {
+  // Delete ticket dynamically
+  const deleteTicket = async (id: string) => {
     await fetch("/api/admin/tickets", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
@@ -49,10 +49,11 @@ export default function TicketTable() {
     fetchTickets();
   };
 
-  const filteredTickets = tickets.filter(t =>
-    (status === "" || t.status === status) &&
-    (priority === "" || t.priority === priority) &&
-    (category === "" || t.category === category)
+  const filteredTickets = tickets.filter(
+    (t) =>
+      (status === "" || t.status === status) &&
+      (priority === "" || t.priority === priority) &&
+      (category === "" || t.category === category)
   );
 
   if (loading) return <p>Loading tickets...</p>;
@@ -61,21 +62,21 @@ export default function TicketTable() {
     <div>
       {/* Filters */}
       <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
-        <select onChange={e => setStatus(e.target.value)}>
+        <select onChange={(e) => setStatus(e.target.value)}>
           <option value="">All Status</option>
           <option value="open">Open</option>
           <option value="in-progress">In Progress</option>
           <option value="closed">Closed</option>
         </select>
 
-        <select onChange={e => setPriority(e.target.value)}>
+        <select onChange={(e) => setPriority(e.target.value)}>
           <option value="">All Priority</option>
           <option value="high">High</option>
           <option value="medium">Medium</option>
           <option value="low">Low</option>
         </select>
 
-        <select onChange={e => setCategory(e.target.value)}>
+        <select onChange={(e) => setCategory(e.target.value)}>
           <option value="">All Category</option>
           <option value="login">Login</option>
           <option value="payment">Payment</option>
@@ -97,14 +98,14 @@ export default function TicketTable() {
         </thead>
 
         <tbody>
-          {filteredTickets.map(ticket => (
-            <tr key={ticket.id}>
-              <td>{ticket.id}</td>
+          {filteredTickets.map((ticket) => (
+            <tr key={ticket._id}>
+              <td>{ticket._id}</td>
               <td>{ticket.title}</td>
               <td>
                 <select
                   value={ticket.status}
-                  onChange={e => updateStatus(ticket.id, e.target.value)}
+                  onChange={(e) => updateStatus(ticket._id, e.target.value)}
                 >
                   <option value="open">Open</option>
                   <option value="in-progress">In Progress</option>
@@ -114,9 +115,7 @@ export default function TicketTable() {
               <td>{ticket.priority}</td>
               <td>{ticket.category}</td>
               <td>
-                <button onClick={() => deleteTicket(ticket.id)}>
-                  Delete
-                </button>
+                <button onClick={() => deleteTicket(ticket._id)}>Delete</button>
               </td>
             </tr>
           ))}

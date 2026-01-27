@@ -1,4 +1,6 @@
-import TicketTable from "@/components/admin/TicketTable.";
+
+import TicketTable from "@/components/admin/TicketTable";
+
 
 export default function AdminTicketsPage() {
   return (
