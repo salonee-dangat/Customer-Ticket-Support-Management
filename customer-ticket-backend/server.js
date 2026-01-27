@@ -11,14 +11,20 @@ const app = express();
 app.use(express.json());
 app.use(cors()); // allow frontend to access backend
 
+// 4 Import Models
+const User = require("./models/User");
+
+// 5 Routes
 app.use("/api/auth", require("./routes/auth"));
+app.use("/api/tickets", require("./routes/ticketRoutes"));
+app.use("/api/users", require("./routes/userRoutes"));
+
 
 // 4 Example Users (Today’s Task)
 const exampleUsers = [
   { _id: 1, name: "Neha", email: "neha@example.com", role: "admin" },
   { _id: 2, name: "Saloni", email: "saloni12@example.com", role: "user" },
 ];
-
 // 5 User Routes
 app.get("/api/users", (req, res) => {
   res.json(exampleUsers);
@@ -50,6 +56,15 @@ mongoose
   .catch((err) => console.log(err));
 
 // 8 Start server
+
+// 6 Connect to MongoDB
+mongoose
+  .connect(process.env.MONGO_URL)
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => console.log("MongoDB Error:", err));
+
+// 7 Start server
+
 app.listen(5050, () => {
   console.log("Server running on port 5050");
 });
