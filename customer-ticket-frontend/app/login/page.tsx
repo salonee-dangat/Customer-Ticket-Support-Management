@@ -27,9 +27,12 @@ export default function LoginPage() {
 
     try {
       setLoading(true);
+
+      // ✅ Login request
       const res = await fetch("http://localhost:5050/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // ✅ important for httpOnly cookie
         body: JSON.stringify(formData),
       });
 
@@ -44,12 +47,22 @@ export default function LoginPage() {
         return;
       }
 
+
       // Save token to localStorage
       localStorage.setItem("token", data.token);
 
       // Redirect to tickets/dashboard
       router.push("/dashboard");
+
+      //  Redirect based on role (user for now)
+      if (data.user.role === "admin") {
+        router.push("/admin/dashboard"); // admin not ready yet
+      } else {
+        router.push("/dashboard"); // user dashboard
+      }
+ 
     } catch (err) {
+      console.error(err); // optional: see the exact error in console
       setError("Something went wrong");
     } finally {
       setLoading(false);
@@ -98,7 +111,10 @@ export default function LoginPage() {
 
         <p className="text-center text-sm mt-6 text-gray-600">
           Don’t have an account?{" "}
-          <Link href="/register" className="text-indigo-600 font-medium hover:underline">
+          <Link
+            href="/register"
+            className="text-indigo-600 font-medium hover:underline"
+          >
             Register
           </Link>
         </p>

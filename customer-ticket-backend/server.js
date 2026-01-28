@@ -1,29 +1,40 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const cookieParser = require("cookie-parser"); // ✅ add cookie parser
 require("dotenv").config();
 
-// 1 Initialize app
+// 1️⃣ Initialize app
 const app = express();
 
-// 2 Middleware
+// 2️⃣ Middleware
 app.use(express.json());
-app.use(cors());
 
-// 3 Import Models
+// ✅ Allow frontend to send cookies
+app.use(
+  cors({
+    origin: "http://localhost:3000", // frontend URL
+    credentials: true,               // ✅ important for cookies
+  })
+);
+
+// ✅ Parse cookies
+app.use(cookieParser());
+
+// 3️⃣ Import Models
 const User = require("./models/User");
 
-// 4 Import Routes
+// 4️⃣ Import Routes
 const authRoutes = require("./routes/auth");
 const ticketRoutes = require("./routes/ticketRoutes");
 
-// 5 Auth Routes
+// 5️⃣ Auth Routes
 app.use("/api/auth", authRoutes);
 
-// 6 Ticket Routes
+// 6️⃣ Ticket Routes
 app.use("/api/tickets", ticketRoutes);
 
-// 7 USERS API (FETCH REAL USERS FROM MONGODB)
+// 7️⃣ USERS API (fetch real users)
 app.get("/api/users", async (req, res) => {
   try {
     const users = await User.find({}, "_id name email role");
@@ -34,13 +45,13 @@ app.get("/api/users", async (req, res) => {
   }
 });
 
-// 8 Connect to MongoDB
+// 8️⃣ Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URL)
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.log("MongoDB Error:", err));
 
-// 9 Start server
+// 9️⃣ Start server
 app.listen(5050, () => {
   console.log("🚀 Server running on port 5050");
 });
