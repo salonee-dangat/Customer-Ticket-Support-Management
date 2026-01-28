@@ -1,8 +1,9 @@
 // 1 Require modules
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-require("dotenv").config();
+
 
 // 2 Initialize app
 const app = express();
@@ -58,10 +59,13 @@ app.post("/api/tickets", (req, res) => {
 });
 
 // 10 Connect to MongoDB
-mongoose
-  .connect(process.env.MONGO_URL)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.log("❌ MongoDB Error:", err));
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => {
+    console.error("MongoDB connection error:", err.message);
+    process.exit(1);
+  });
+
 
 // 11 Start server
 app.listen(5050, () => {
