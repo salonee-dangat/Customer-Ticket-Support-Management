@@ -1,15 +1,16 @@
 const jwt = require("jsonwebtoken");
 
+// Middleware to verify JWT from cookie
 const verifyToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+  // Read token from cookie
+  const token = req.cookies?.token;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Token missing or invalid" });
+  if (!token) {
+    return res.status(401).json({ message: "Not authenticated" });
   }
 
-  const token = authHeader.split(" ")[1];
-
   try {
+    // Verify JWT
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded; // { id, role }
     next();
@@ -18,6 +19,7 @@ const verifyToken = (req, res, next) => {
   }
 };
 
+// Middleware to allow only employee or user roles
 const allowEmployeeOrUser = (req, res, next) => {
   if (req.user.role === "employee" || req.user.role === "user") {
     next();

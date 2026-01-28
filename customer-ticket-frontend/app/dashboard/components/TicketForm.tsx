@@ -1,71 +1,60 @@
 "use client";
 import { useState } from "react";
 
-export default function TicketForm({
-  onCreated,
-}: {
-  onCreated: () => void;
-}) {
+export default function TicketForm({ onCreated }: { onCreated: () => void }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("Low");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("SUBMIT CLICKED");
+    setError("");
 
-  const userId = localStorage.getItem("userId");
-
-  if (!userId) {
-    alert("User not logged in");
-    return;
-  }
-
-  const payload = {
-    title,
-    description,
-    priority,
-    userId,
-  };
-
-  console.log("Sending payload:", payload);
-
-  try {
-    const res = await fetch("http://localhost:5050/api/tickets", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title,
-        description,
-        priority,
-        userId: localStorage.getItem("userId"),
-      }),
-    });
-
-    const data = await res.json();
-    console.log("Backend response:", data);
-
-    if (res.ok) {
-      alert("Ticket created successfully");
-      setTitle("");
-      setDescription("");
-      setPriority("Low");
-    } else {
-      alert(data.message || "Failed to create ticket");
+    if (!title || !description) {
+      setError("Please fill in all fields.");
+      return;
     }
-  } catch (error) {
-    console.error("Create ticket error:", error);
-  }
-};
+
+    try {
+      setLoading(true);
+
+      const res = await fetch("http://localhost:5050/api/tickets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // ✅ send JWT cookie
+        body: JSON.stringify({ title, description, priority }),
+      });
+
+      const data = await res.json();
+      console.log("Backend response:", data);
+
+      if (res.ok) {
+        // Reset form
+        setTitle("");
+        setDescription("");
+        setPriority("Low");
+
+        // Notify parent to refresh ticket list
+        onCreated();
+      } else {
+        setError(data.message || "Failed to create ticket");
+      }
+    } catch (err) {
+      console.error("Create ticket error:", err);
+      setError("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="rounded-2xl p-6 bg-gradient-to-br from-pink-500 to-purple-600 text-white shadow-lg">
       <h2 className="text-2xl font-semibold">Create Ticket</h2>
-      <p className="text-sm text-pink-100 mb-6">
-        Raise a new support request
-      </p>
+      <p className="text-sm text-pink-100 mb-6">Raise a new support request</p>
+
+      {error && <p className="text-red-200 mb-2">{error}</p>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
@@ -94,9 +83,10 @@ export default function TicketForm({
 
         <button
           type="submit"
-          className="w-full bg-purple-800 hover:bg-purple-900 transition p-3 rounded-lg font-semibold"
+          disabled={loading}
+          className="w-full bg-purple-800 hover:bg-purple-900 transition p-3 rounded-lg font-semibold disabled:opacity-50"
         >
-          Submit Ticket
+          {loading ? "Submitting..." : "Submit Ticket"}
         </button>
       </form>
     </div>
