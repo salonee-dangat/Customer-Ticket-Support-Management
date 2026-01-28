@@ -35,6 +35,10 @@ export default function LoginPage() {
 
       const data = await res.json();
 
+
+      localStorage.setItem("userId", data.user.id);
+      localStorage.setItem("token", data.token);
+
       if (!res.ok) {
         setError(data.message || "Login failed");
         return;
@@ -44,7 +48,7 @@ export default function LoginPage() {
       localStorage.setItem("token", data.token);
 
       // Redirect to tickets/dashboard
-      router.push("/tickets");
+      router.push("/dashboard");
     } catch (err) {
       setError("Something went wrong");
     } finally {
