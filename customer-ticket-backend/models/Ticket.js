@@ -20,6 +20,12 @@ const ticketSchema = new mongoose.Schema(
       default: "Low",
     },
 
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
     status: {
       type: String,
       enum: ["Open", "InProgress", "Resolved", "Closed"],

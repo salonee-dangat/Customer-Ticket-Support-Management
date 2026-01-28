@@ -7,11 +7,11 @@ const {
   allowEmployeeOrUser,
 } = require("../lib/authMiddleware");
 
-router.post(
-  "/create",
-  verifyToken,
-  allowEmployeeOrUser,
-  createTicket
+router.post("/", (req, res, next) => {
+  console.log("POST /api/tickets HIT");
+  console.log(req.body);
+  next();
+}
 );
 
 module.exports = router;

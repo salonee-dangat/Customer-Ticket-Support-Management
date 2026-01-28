@@ -37,8 +37,8 @@ app.get("/api/users", async (req, res) => {
 // 8 Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URL)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.log("❌ MongoDB Error:", err));
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => console.log("MongoDB Error:", err));
 
 // 9 Start server
 app.listen(5050, () => {
