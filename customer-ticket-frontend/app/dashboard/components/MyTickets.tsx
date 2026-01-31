@@ -6,23 +6,18 @@ export default function MyTickets({ refreshKey }: { refreshKey: number }) {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+   useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    if (!userId){
+      console.log("User ID missing from localStorage");
+    } return;
+
     const fetchTickets = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(
-          `http://localhost:5050/api/tickets?page=${page}&limit=5`,
-          {
-            credentials: "include", // ✅ send JWT cookie to identify user
-          }
-        );
-        const data = await res.json();
-        setTickets(Array.isArray(data.tickets) ? data.tickets : []);
-      } catch (err) {
-        console.error("Failed to fetch tickets", err);
-      } finally {
-        setLoading(false);
-      }
+      const res = await fetch(
+        `http://localhost:5050/api/tickets?userId=${userId}&page=${page}&limit=5`
+      );
+      const data = await res.json();
+      setTickets(data.tickets || []);
     };
 
     fetchTickets();

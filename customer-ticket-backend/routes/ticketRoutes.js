@@ -1,12 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const Ticket = require("../models/Ticket"); // Make sure Ticket model exists
+const Ticket = require("../models/Ticket");
 const { verifyToken, allowEmployeeOrUser } = require("../lib/authMiddleware");
 
-// ✅ Create a ticket
+
+// Create ticket (employee/user)
 router.post("/", verifyToken, allowEmployeeOrUser, async (req, res) => {
   try {
-    const { title, description, priority } = req.body;
+    const { title, description, priority, category } = req.body;
 
     if (!title || !description || !priority) {
       return res.status(400).json({ message: "All fields are required" });
@@ -16,7 +17,8 @@ router.post("/", verifyToken, allowEmployeeOrUser, async (req, res) => {
       title,
       description,
       priority,
-      userId: req.user.id, // comes from JWT cookie
+      category,
+      userId: req.user.id,
       status: "Open",
     });
 
@@ -27,21 +29,41 @@ router.post("/", verifyToken, allowEmployeeOrUser, async (req, res) => {
   }
 });
 
-// ✅ Get tickets for logged-in user (with pagination)
-router.get("/", verifyToken, allowEmployeeOrUser, async (req, res) => {
+
+// Employee: only their tickets
+router.get("/my-tickets", verifyToken, async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 5;
-    const skip = (page - 1) * limit;
-
     const tickets = await Ticket.find({ userId: req.user.id })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+      .sort({ createdAt: -1 });
 
-    res.json({ tickets });
+    res.status(200).json(tickets);
   } catch (err) {
-    console.error("Fetch tickets error:", err);
+    res.status(500).json({ message: "Failed to fetch tickets" });
+  }
+});
+
+
+// Admin: all tickets with filters
+router.get("/admin/all", verifyToken, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Admin only" });
+    }
+
+    const { status, priority, category } = req.query;
+
+    let filter = {};
+
+    if (status) filter.status = status;
+    if (priority) filter.priority = priority;
+    if (category) filter.category = category;
+
+    const tickets = await Ticket.find(filter)
+      .sort({ createdAt: -1 });
+
+    res.json(tickets);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Failed to fetch tickets" });
   }
 });

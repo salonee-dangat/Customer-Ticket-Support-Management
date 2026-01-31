@@ -28,38 +28,33 @@ export default function LoginPage() {
     try {
       setLoading(true);
 
-      // ✅ Login request
-      const res = await fetch("http://localhost:5050/api/auth/login", {
+      //  Login request
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // ✅ important for httpOnly cookie
+        credentials: "include", 
         body: JSON.stringify(formData),
       });
 
       const data = await res.json();
+      console.log("Login response data:", data);
 
+if (!res.ok) {
+  setError(data.message || "Login failed");
+  return;
+}
 
-      localStorage.setItem("userId", data.user.id);
-      localStorage.setItem("token", data.token);
+//  SAVE AUTH DATA (ONLY AFTER SUCCESS)
+localStorage.setItem("userId", data.user._id);
+localStorage.setItem("token", data.token);
+localStorage.setItem("role", data.user.role);
 
-      if (!res.ok) {
-        setError(data.message || "Login failed");
-        return;
-      }
-
-
-      // Save token to localStorage
-      localStorage.setItem("token", data.token);
-
-      // Redirect to tickets/dashboard
-      router.push("/dashboard");
-
-      //  Redirect based on role (user for now)
-      if (data.user.role === "admin") {
-        router.push("/admin/dashboard"); // admin not ready yet
-      } else {
-        router.push("/dashboard"); // user dashboard
-      }
+//  REDIRECT BASED ON ROLE
+if (data.user.role === "admin") {
+  router.push("/admin/dashboard");
+} else {
+  router.push("/dashboard");
+}
  
     } catch (err) {
       console.error(err); // optional: see the exact error in console
