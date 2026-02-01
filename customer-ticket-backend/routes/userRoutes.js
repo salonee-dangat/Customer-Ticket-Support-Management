@@ -3,31 +3,31 @@ const router = express.Router();
 const User = require("../models/User");
 const { verifyToken } = require("../lib/authMiddleware");
 
-/**
- * GET USER SETTINGS
- * URL: /api/users/settings
- */
-router.get("/settings", verifyToken, async (req, res) => {
+// ✅ Get logged-in user info
+router.get("/me", verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select(
       "name email role createdAt"
     );
-
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
     res.json({
+      id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
       joinedAt: user.createdAt,
     });
-  } catch (error) {
-    console.error("Settings fetch error:", error);
-    res.status(500).json({ message: "Failed to load settings" });
+  } catch (err) {
+    console.error("Fetch user error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
+
+// ✅ Existing /settings routes below
+// GET /api/users/settings
+// PUT /api/users/settings
 
 /**
  * UPDATE USER SETTINGS

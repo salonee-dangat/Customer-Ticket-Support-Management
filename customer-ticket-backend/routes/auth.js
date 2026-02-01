@@ -1,40 +1,47 @@
 const express = require("express");
 const User = require("../models/User");
-const { createToken } = require("../lib/authMiddleware"); // make sure path is correct
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const router = express.Router();
+
+// --------------------- CREATE TOKEN FUNCTION ---------------------
+const createToken = (user) => {
+  return jwt.sign(
+    {
+      id: user._id,
+      role: user.role, // user, employee, or admin
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+};
 
 // --------------------- REGISTER ---------------------
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
-    // Check for required fields
     if (!name || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({ message: "User already exists" });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user with default role as 'employee' if role not provided
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
-      role: role || "employee",
+      role: role || "employee", // default role
     });
 
     const token = createToken(user);
 
-    // Set token in HTTP-only cookie
     res.cookie("token", token, {
       httpOnly: true,
       secure: false, // true if using HTTPS
@@ -51,8 +58,8 @@ router.post("/register", async (req, res) => {
         role: user.role,
       },
     });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error("Register error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -67,41 +74,33 @@ router.post("/login", async (req, res) => {
     }
 
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
+    if (!user) return res.status(401).json({ message: "Invalid email or password" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
+    if (!isMatch) return res.status(401).json({ message: "Invalid email or password" });
 
     const token = createToken(user);
 
-    // Set token in HTTP-only cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // true if using HTTPS
+      secure: false,
       sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    // Send user info including role so frontend can redirect
+    // ✅ Return role for frontend redirection
     res.json({
       message: "Login successful",
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role, // admin or employee
+        role: user.role,
       },
-      redirectTo:
-        user.role === "admin"
-          ? "/admin-dashboard"
-          : "/employee-dashboard", // <-- frontend can use this
+      redirectTo: user.role === "admin" ? "/admin/dashboard" : "/employee-dashboard",
     });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error("Login error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });

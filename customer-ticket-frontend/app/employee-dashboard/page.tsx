@@ -1,7 +1,9 @@
+"use client";
+
 import Link from "next/link";
 
 export default function EmployeeDashboard() {
-  const employeeName = "Employee"; // later dynamic
+  const employeeName = "Employee"; // later you can make this dynamic
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-pink-900 text-white px-10 py-12">
@@ -94,7 +96,7 @@ export default function EmployeeDashboard() {
 
       </div>
 
-      {/* Footer Line */}
+      {/* Footer */}
       <div className="mt-20 text-center text-purple-200 text-sm">
         Built for a smooth and professional employee experience ✨
       </div>
