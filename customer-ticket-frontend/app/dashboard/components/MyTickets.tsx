@@ -1,7 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 
-export default function MyTickets({ refreshKey }: { refreshKey: number }) {
+interface MyTicketsProps {
+  refreshKey: number; // increment this from parent after ticket creation
+}
+
+export default function MyTickets({ refreshKey }: MyTicketsProps) {
   const [tickets, setTickets] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -13,10 +17,11 @@ export default function MyTickets({ refreshKey }: { refreshKey: number }) {
         const res = await fetch(
           `http://localhost:5050/api/tickets?page=${page}&limit=5`,
           {
-            credentials: "include", // ✅ send JWT cookie to identify user
+            credentials: "include", // send JWT cookie
           }
         );
         const data = await res.json();
+        console.log("🔥 Tickets received from API:", data.tickets); // debug
         setTickets(Array.isArray(data.tickets) ? data.tickets : []);
       } catch (err) {
         console.error("Failed to fetch tickets", err);
@@ -26,7 +31,7 @@ export default function MyTickets({ refreshKey }: { refreshKey: number }) {
     };
 
     fetchTickets();
-  }, [page, refreshKey]);
+  }, [page, refreshKey]); // ✅ re-fetch when page or refreshKey changes
 
   return (
     <div className="rounded-2xl p-6 bg-gradient-to-br from-pink-500 to-purple-600 text-white shadow-lg">
@@ -46,7 +51,7 @@ export default function MyTickets({ refreshKey }: { refreshKey: number }) {
             >
               <p className="font-medium">{ticket.title}</p>
               <span className="text-sm text-pink-200">
-                {ticket.priority} Priority
+                {ticket.priority || "Low"} Priority
               </span>
             </div>
           ))}

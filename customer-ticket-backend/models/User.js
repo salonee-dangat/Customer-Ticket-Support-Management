@@ -20,15 +20,25 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
+    phone: {
+      type: String,
+      default: "",
+    },
+
     role: {
       type: String,
       enum: ["user", "admin"],
       default: "user",
     },
+
+    preferences: {
+      emailNotifications: { type: Boolean, default: true },
+      ticketUpdates: { type: Boolean, default: true },
+      systemAlerts: { type: Boolean, default: true },
+      theme: { type: String, default: "light" },
+    },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("User", userSchema);

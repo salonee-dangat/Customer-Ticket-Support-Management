@@ -20,20 +20,20 @@ const ticketSchema = new mongoose.Schema(
       default: "Low",
     },
 
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-
     status: {
       type: String,
-      enum: ["Open", "InProgress", "Resolved", "Closed"],
+      enum: ["Open", "In Progress", "Resolved", "Closed"],
       default: "Open",
+    },
+
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",        // 🔁 change to "Employee" if your model name is Employee
+      required: true,
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // adds createdAt & updatedAt automatically
   }
 );
 

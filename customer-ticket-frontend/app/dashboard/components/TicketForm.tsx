@@ -1,7 +1,11 @@
 "use client";
 import { useState } from "react";
 
-export default function TicketForm({ onCreated }: { onCreated: () => void }) {
+interface TicketFormProps {
+  onCreated: () => void; // callback to refresh tickets
+}
+
+export default function TicketForm({ onCreated }: TicketFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("Low");
@@ -23,12 +27,12 @@ export default function TicketForm({ onCreated }: { onCreated: () => void }) {
       const res = await fetch("http://localhost:5050/api/tickets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // ✅ send JWT cookie
+        credentials: "include", // send JWT cookie
         body: JSON.stringify({ title, description, priority }),
       });
 
       const data = await res.json();
-      console.log("Backend response:", data);
+      console.log("🔥 Backend response:", data);
 
       if (res.ok) {
         // Reset form
@@ -36,13 +40,13 @@ export default function TicketForm({ onCreated }: { onCreated: () => void }) {
         setDescription("");
         setPriority("Low");
 
-        // Notify parent to refresh ticket list
+        // Notify parent to refresh tickets
         onCreated();
       } else {
         setError(data.message || "Failed to create ticket");
       }
     } catch (err) {
-      console.error("Create ticket error:", err);
+      console.error("🔥 Create ticket error:", err);
       setError("Something went wrong");
     } finally {
       setLoading(false);

@@ -28,11 +28,10 @@ export default function LoginPage() {
     try {
       setLoading(true);
 
-      // ✅ Login request
       const res = await fetch("http://localhost:5050/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // ✅ important for httpOnly cookie
+        credentials: "include", // ✅ VERY IMPORTANT
         body: JSON.stringify(formData),
       });
 
@@ -43,14 +42,10 @@ export default function LoginPage() {
         return;
       }
 
-      // ✅ Redirect based on role (user for now)
-      if (data.user.role === "admin") {
-        router.push("/admin/dashboard"); // admin not ready yet
-      } else {
-        router.push("/dashboard"); // user dashboard
-      }
+      // ✅ FIXED REDIRECT (ONLY THIS LINE CHANGED)
+      router.push("/employee-dashboard");
     } catch (err) {
-      console.error(err); // optional: see the exact error in console
+      console.error(err);
       setError("Something went wrong");
     } finally {
       setLoading(false);

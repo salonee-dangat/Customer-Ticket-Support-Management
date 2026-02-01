@@ -1,18 +1,56 @@
 const express = require("express");
 const router = express.Router();
+const User = require("../models/User");
+const { verifyToken } = require("../lib/authMiddleware");
 
-// Example users (demo for showing frontend)
-const exampleUsers = [
-  { _id: 1, name: "Neha", email: "neha@example.com", role: "admin" },
-  { _id: 2, name: "Saloni", email: "saloni12@example.com", role: "user" },
-];
+/**
+ * GET USER SETTINGS
+ * URL: /api/users/settings
+ */
+router.get("/settings", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select(
+      "name email role createdAt"
+    );
 
-// GET all users
-router.get("/", (req, res) => {
-  res.json(exampleUsers);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      joinedAt: user.createdAt,
+    });
+  } catch (error) {
+    console.error("Settings fetch error:", error);
+    res.status(500).json({ message: "Failed to load settings" });
+  }
 });
 
-// You can add POST later if needed
-// router.post("/", (req, res) => { ... });
+/**
+ * UPDATE USER SETTINGS
+ * URL: /api/users/settings
+ */
+router.put("/settings", verifyToken, async (req, res) => {
+  try {
+    const { name } = req.body;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      { name },
+      { new: true }
+    ).select("name email role");
+
+    res.json({
+      message: "Settings updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Settings update error:", error);
+    res.status(500).json({ message: "Failed to update settings" });
+  }
+});
 
 module.exports = router;
