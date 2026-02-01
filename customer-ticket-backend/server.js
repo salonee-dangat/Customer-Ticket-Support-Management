@@ -28,6 +28,8 @@ const userRoutes = require("./routes/userRoutes");
 app.use("/api/auth", authRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/users", userRoutes); // ✅ ONLY ONCE
+app.use("/api/admin", require("./routes/adminRoutes"));
+
 
 // Connect MongoDB
 mongoose
