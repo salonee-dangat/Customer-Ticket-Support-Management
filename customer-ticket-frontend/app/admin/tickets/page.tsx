@@ -12,42 +12,43 @@ export default function AdminTickets() {
     category: "",
   });
 
+  // ✅ fetch tickets only once on mount
   useEffect(() => {
-    fetchTickets();
-  }, [filters]);
+    const fetchTickets = async () => {
+      try {
+        setLoading(true);
 
-  const fetchTickets = async () => {
-    try {
-      setLoading(true);
-
-      const params = new URLSearchParams(filters as any).toString();
-
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/tickets?${params}`,
-        {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/tickets`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
-      );
+        });
 
-      const data = await res.json();
+        const data = await res.json();
+        setTickets(data.tickets || []);
+      } catch (err) {
+        console.error("Failed to fetch tickets:", err);
+        setTickets([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      // ✅ FIX: set tickets to the array, not the object
-      setTickets(data.tickets || []); 
-    } catch (err) {
-      console.error("Failed to fetch tickets:", err);
-      setTickets([]); // fallback to empty array
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchTickets();
+  }, []); // ✅ empty dependency array
 
-  // ✅ Search filter
-  const filteredTickets = (tickets || []).filter((ticket) =>
-    ticket.title.toLowerCase().includes(search.toLowerCase()) ||
-    ticket.description.toLowerCase().includes(search.toLowerCase())
-  );
+  // ✅ filtering happens inside render (works with any combination)
+  const filteredTickets = tickets.filter((ticket) => {
+    const matchesSearch =
+      ticket.title.toLowerCase().includes(search.toLowerCase()) ||
+      ticket.description.toLowerCase().includes(search.toLowerCase());
+
+    const matchesStatus = filters.status ? ticket.status === filters.status : true;
+    const matchesPriority = filters.priority ? ticket.priority === filters.priority : true;
+    const matchesCategory = filters.category ? ticket.category === filters.category : true;
+
+    return matchesSearch && matchesStatus && matchesPriority && matchesCategory;
+  });
 
   // Summary counts
   const total = filteredTickets.length;
@@ -61,7 +62,7 @@ export default function AdminTickets() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl p-6 shadow-xl text-white">
+    <div className="bg-gradient-to-br from-pink-100 to-purple-200 rounded-xl p-6 shadow-xl text-white">
       {/* Search */}
       <input
         type="text"
@@ -72,7 +73,7 @@ export default function AdminTickets() {
       />
 
       {/* Summary */}
-      <div className="flex gap-6 mb-6 font-semibold">
+      <div className="flex gap-6 mb-6 font-semibold text-black">
         <span>Total: {total}</span>
         <span>Open: {open}</span>
         <span>Closed: {closed}</span>
@@ -80,21 +81,30 @@ export default function AdminTickets() {
 
       {/* Filters */}
       <div className="grid grid-cols-3 gap-4 mb-6 text-black">
-        <select onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
+        <select
+          value={filters.status}
+          onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+        >
           <option value="">All Status</option>
           <option value="open">Open</option>
           <option value="in-progress">In Progress</option>
           <option value="closed">Closed</option>
         </select>
 
-        <select onChange={(e) => setFilters({ ...filters, priority: e.target.value })}>
+        <select
+          value={filters.priority}
+          onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
+        >
           <option value="">All Priority</option>
           <option value="low">Low</option>
           <option value="medium">Medium</option>
           <option value="high">High</option>
         </select>
 
-        <select onChange={(e) => setFilters({ ...filters, category: e.target.value })}>
+        <select
+          value={filters.category}
+          onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+        >
           <option value="">All Category</option>
           <option value="technical">Technical</option>
           <option value="billing">Billing</option>
@@ -104,16 +114,20 @@ export default function AdminTickets() {
 
       {/* Tickets List */}
       {loading ? (
-        <p className="text-center animate-pulse font-medium">Loading tickets...</p>
+        <p className="text-center animate-pulse font-medium text-black">Loading tickets...</p>
       ) : filteredTickets.length === 0 ? (
-        <p className="text-center font-medium">No tickets found</p>
+        <p className="text-center font-medium text-black">No tickets found</p>
       ) : (
         filteredTickets.map((ticket: any) => (
           <div key={ticket._id} className="bg-white text-black p-4 rounded-lg mb-3 shadow">
             <h3 className="font-semibold text-lg">{ticket.title}</h3>
             <p>{ticket.description}</p>
             <div className="text-sm mt-2 flex gap-3 items-center">
-              <span className={`px-2 py-1 rounded text-white text-xs font-semibold ${badgeColor(ticket.status)}`}>
+              <span
+                className={`px-2 py-1 rounded text-white text-xs font-semibold ${badgeColor(
+                  ticket.status
+                )}`}
+              >
                 {ticket.status}
               </span>
               <span>Priority: {ticket.priority}</span>

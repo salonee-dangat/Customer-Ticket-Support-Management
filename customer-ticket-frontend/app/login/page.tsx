@@ -19,18 +19,27 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(formData),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(formData),
+        }
+      );
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Login failed");
 
-      if (data.user.role === "admin") router.push("/admin/dashboard");
-      else router.push("/employee-dashboard");
+      // ✅ STORE TOKEN (THIS WAS MISSING)
+      localStorage.setItem("token", data.token);
+
+      if (data.user.role === "admin") {
+        router.push("/admin/dashboard");
+      } else {
+        router.push("/employee-dashboard");
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -40,8 +49,12 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-xl shadow-md w-full max-w-md">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-8 rounded-xl shadow-md w-full max-w-md"
+      >
         <h1 className="text-2xl font-bold mb-4">Login</h1>
+
         {error && <p className="text-red-500 mb-2">{error}</p>}
 
         <input
@@ -51,6 +64,7 @@ export default function LoginPage() {
           onChange={handleChange}
           className="w-full p-3 mb-3 border rounded"
         />
+
         <input
           name="password"
           type="password"
@@ -59,6 +73,7 @@ export default function LoginPage() {
           onChange={handleChange}
           className="w-full p-3 mb-3 border rounded"
         />
+
         <button
           type="submit"
           disabled={loading}

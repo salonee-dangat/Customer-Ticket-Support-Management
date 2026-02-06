@@ -82,15 +82,16 @@ router.post("/login", async (req, res) => {
     const token = createToken(user);
 
     res.cookie("token", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+  httpOnly: true,
+  sameSite: "none",   // 🔥 REQUIRED for different ports
+  secure: false,      // keep false for localhost
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+});
 
     // ✅ Return role for frontend redirection
     res.json({
       message: "Login successful",
+      token,
       user: {
         id: user._id,
         name: user.name,
