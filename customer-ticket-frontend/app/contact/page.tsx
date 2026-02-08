@@ -1,8 +1,10 @@
+"use client";
+
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 px-6 py-20">
+    <div className="min-h-screen bg-gradient-to-br from-pink-200 to-purple-300 px-6 py-20">
       <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl p-12 grid md:grid-cols-2 gap-12">
-        
+
         {/* LEFT INFO */}
         <div>
           <h1 className="text-4xl font-bold text-gray-800 mb-4">
@@ -70,6 +72,7 @@ export default function ContactPage() {
             </button>
           </div>
         </div>
+
       </div>
     </div>
   );

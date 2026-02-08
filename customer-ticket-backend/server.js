@@ -1,45 +1,46 @@
+<<<<<<< HEAD
 // 1 Require modules
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
+=======
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
+require("dotenv").config();
+>>>>>>> 99512481c7356fae88bf7f527132777ecb5863fe
 
-// 2 Initialize app
+// Initialize app
 const app = express();
 
-// 3 Middleware
+// Middleware
 app.use(express.json());
-app.use(cors());
 
-// 4 Import Models
-const User = require("./models/User");
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 
-// 5 Auth Routes
-app.use("/api/auth", require("./routes/auth"));
+app.use(cookieParser());
 
-// 6 Demo Tickets (temporary – until DB tickets are added)
-const tickets = [
-  { _id: 101, title: "Login Issue", status: "created" },
-  { _id: 102, title: "Page not loading", status: "created" },
-];
+// Import routes
+const authRoutes = require("./routes/auth");
+const ticketRoutes = require("./routes/ticketRoutes");
+const userRoutes = require("./routes/userRoutes");
 
-// 7 USERS API (FETCH REAL USERS FROM MONGODB)
-app.get("/api/users", async (req, res) => {
-  try {
-    const users = await User.find({}, "_id name email role");
-    res.json(users);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error fetching users" });
-  }
-});
+// Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/tickets", ticketRoutes);
+app.use("/api/users", userRoutes); // ✅ ONLY ONCE
+app.use("/api/admin", require("./routes/adminRoutes"));
 
-// 8 GET tickets
-app.get("/api/tickets", (req, res) => {
-  res.json(tickets);
-});
 
+<<<<<<< HEAD
 // 9 POST ticket
 app.post("/api/tickets", (req, res) => {
   const { title } = req.body;
@@ -66,8 +67,15 @@ mongoose.connect(process.env.MONGO_URI)
     process.exit(1);
   });
 
+=======
+// Connect MongoDB
+mongoose
+  .connect(process.env.MONGO_URL)
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) => console.log("❌ MongoDB Error:", err));
+>>>>>>> 99512481c7356fae88bf7f527132777ecb5863fe
 
-// 11 Start server
+// Start server
 app.listen(5050, () => {
   console.log("🚀 Server running on port 5050");
 });

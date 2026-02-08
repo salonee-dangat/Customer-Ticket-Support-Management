@@ -1,10 +1,38 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 
 export default function HomePage() {
+  // ✅ Fix: explicitly tell useState it can be string or null
+  const [activeFeature, setActiveFeature] = useState<string | null>(null);
+
+  const features = [
+    {
+      key: "ticket",
+      title: "Easy Ticket Creation",
+      desc: "Customers can raise issues easily with clear tracking and updates.",
+      icon: "🎫",
+      info: "To create a ticket, click on 'Create Ticket', fill in the issue details, and submit. You can track the status of your ticket in real-time from your dashboard."
+    },
+    {
+      key: "dashboard",
+      title: "Admin Dashboard",
+      desc: "Admins manage tickets, users, and resolutions from one place.",
+      icon: "🛠️",
+      info: "The Admin Dashboard allows authorized users to view all tickets, manage users, assign tasks, and monitor progress for efficient support management."
+    },
+    {
+      key: "secure",
+      title: "Secure & Reliable",
+      desc: "Authentication, role-based access, and secure data handling.",
+      icon: "🔐",
+      info: "Our platform ensures secure login, role-based access, and encrypted data storage to protect sensitive customer and company information."
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-200 to-purple-300">
       
       {/* HERO */}
       <section className="text-center px-6 py-28">
@@ -36,30 +64,22 @@ export default function HomePage() {
 
       {/* FEATURES PREVIEW */}
       <section className="max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-3 gap-10">
-        {[
-          {
-            title: "Easy Ticket Creation",
-            desc: "Customers can raise issues easily with clear tracking and updates.",
-            icon: "🎫",
-          },
-          {
-            title: "Admin Dashboard",
-            desc: "Admins manage tickets, users, and resolutions from one place.",
-            icon: "🛠️",
-          },
-          {
-            title: "Secure & Reliable",
-            desc: "Authentication, role-based access, and secure data handling.",
-            icon: "🔐",
-          },
-        ].map((item, index) => (
+        {features.map((item) => (
           <div
-            key={index}
-            className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition"
+            key={item.key}
+            className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition cursor-pointer"
+            onClick={() => setActiveFeature(activeFeature === item.key ? null : item.key)}
           >
             <div className="text-4xl mb-4">{item.icon}</div>
             <h3 className="text-xl font-semibold mb-3">{item.title}</h3>
             <p className="text-gray-600">{item.desc}</p>
+
+            {/* Extra info on click */}
+            {activeFeature === item.key && (
+              <p className="mt-4 text-gray-800 bg-gray-100 p-3 rounded-lg">
+                {item.info}
+              </p>
+            )}
           </div>
         ))}
       </section>
