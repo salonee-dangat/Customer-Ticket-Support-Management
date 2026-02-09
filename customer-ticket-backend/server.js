@@ -1,23 +1,18 @@
-<<<<<<< HEAD
-// 1 Require modules
+// Load environment variables
 require("dotenv").config();
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
 
-=======
+// Require modules
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-require("dotenv").config();
->>>>>>> 99512481c7356fae88bf7f527132777ecb5863fe
 
 // Initialize app
 const app = express();
 
 // Middleware
 app.use(express.json());
+app.use(cookieParser());
 
 app.use(
   cors({
@@ -26,56 +21,29 @@ app.use(
   })
 );
 
-app.use(cookieParser());
-
 // Import routes
 const authRoutes = require("./routes/auth");
 const ticketRoutes = require("./routes/ticketRoutes");
 const userRoutes = require("./routes/userRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/tickets", ticketRoutes);
-app.use("/api/users", userRoutes); // ✅ ONLY ONCE
-app.use("/api/admin", require("./routes/adminRoutes"));
+app.use("/api/users", userRoutes);
+app.use("/api/admin", adminRoutes);
 
-
-<<<<<<< HEAD
-// 9 POST ticket
-app.post("/api/tickets", (req, res) => {
-  const { title } = req.body;
-
-  if (!title) {
-    return res.status(400).json({ message: "Title is required" });
-  }
-
-  const newTicket = {
-    _id: Date.now(),
-    title,
-    status: "created",
-  };
-
-  tickets.push(newTicket);
-  res.json(newTicket);
-});
-
-// 10 Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => {
-    console.error("MongoDB connection error:", err.message);
-    process.exit(1);
-  });
-
-=======
-// Connect MongoDB
+// Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URL)
   .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.log("❌ MongoDB Error:", err));
->>>>>>> 99512481c7356fae88bf7f527132777ecb5863fe
+  .catch((err) => {
+    console.error("❌ MongoDB Connection Error:", err.message);
+    process.exit(1);
+  });
 
 // Start server
-app.listen(5050, () => {
-  console.log("🚀 Server running on port 5050");
+const PORT = 5050;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
