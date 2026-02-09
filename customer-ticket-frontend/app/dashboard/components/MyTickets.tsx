@@ -2,10 +2,20 @@
 import { useEffect, useState } from "react";
 
 interface MyTicketsProps {
-  refreshKey: number; // increment this from parent after ticket creation
+  refreshKey: number;
+  search: string;
+  filters: {
+    status: string;
+    priority: string;
+    category: string;
+  };
 }
 
-export default function MyTickets({ refreshKey }: MyTicketsProps) {
+export default function MyTickets({
+  refreshKey,
+  search,
+  filters,
+}: MyTicketsProps) {
   const [tickets, setTickets] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -21,17 +31,43 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
           }
         );
         const data = await res.json();
-        console.log("🔥 Tickets received from API:", data.tickets); // debug
         setTickets(Array.isArray(data.tickets) ? data.tickets : []);
       } catch (err) {
         console.error("Failed to fetch tickets", err);
+        setTickets([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchTickets();
-  }, [page, refreshKey]); // ✅ re-fetch when page or refreshKey changes
+  }, [page, refreshKey]);
+
+  // 🔍 SEARCH + FILTER LOGIC (client-side)
+  const filteredTickets = tickets.filter((ticket) => {
+    const matchesSearch =
+      ticket.title?.toLowerCase().includes(search.toLowerCase()) ||
+      ticket.description?.toLowerCase().includes(search.toLowerCase());
+
+    const matchesStatus = filters.status
+      ? ticket.status === filters.status
+      : true;
+
+    const matchesPriority = filters.priority
+      ? ticket.priority === filters.priority
+      : true;
+
+    const matchesCategory = filters.category
+      ? ticket.category === filters.category
+      : true;
+
+    return (
+      matchesSearch &&
+      matchesStatus &&
+      matchesPriority &&
+      matchesCategory
+    );
+  });
 
   return (
     <div className="rounded-2xl p-6 bg-gradient-to-br from-pink-500 to-purple-600 text-white shadow-lg">
@@ -40,24 +76,28 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
 
       {loading ? (
         <p>Loading tickets...</p>
-      ) : tickets.length === 0 ? (
+      ) : filteredTickets.length === 0 ? (
         <p>No tickets found.</p>
       ) : (
         <div className="space-y-3">
-          {tickets.map((ticket: any) => (
+          {filteredTickets.map((ticket: any) => (
             <div
               key={ticket._id}
               className="p-4 rounded-xl bg-black/30 border border-pink-300"
             >
               <p className="font-medium">{ticket.title}</p>
-              <span className="text-sm text-pink-200">
-                {ticket.priority || "Low"} Priority
-              </span>
+
+              <div className="text-sm text-pink-200 flex gap-4 mt-1">
+                <span>{ticket.priority || "Low"} Priority</span>
+                <span>{ticket.status || "open"}</span>
+                <span>{ticket.category || "general"}</span>
+              </div>
             </div>
           ))}
         </div>
       )}
 
+      {/* Pagination */}
       <div className="flex justify-between mt-6">
         <button
           onClick={() => setPage((p) => Math.max(p - 1, 1))}

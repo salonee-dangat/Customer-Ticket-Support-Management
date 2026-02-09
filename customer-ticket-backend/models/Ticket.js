@@ -31,6 +31,12 @@ const ticketSchema = new mongoose.Schema(
       ref: "User",        // 🔁 change to "Employee" if your model name is Employee
       required: true,
     },
+    category: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Category",
+  required: true,
+},
+
   },
   {
     timestamps: true, // adds createdAt & updatedAt automatically
