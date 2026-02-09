@@ -1,40 +1,42 @@
 const mongoose = require("mongoose");
 
-const ticketSchema = new mongoose.Schema(
+const messageSchema = new mongoose.Schema(
   {
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    description: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    priority: {
-      type: String,
-      enum: ["Low", "Medium", "High", "Critical"],
-      default: "Low",
-    },
-
-    status: {
-      type: String,
-      enum: ["Open", "In Progress", "Resolved", "Closed"],
-      default: "Open",
-    },
-
-    createdBy: {
+    sender: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",        // 🔁 change to "Employee" if your model name is Employee
+      ref: "User",
       required: true,
+    },
+    text: {
+      type: String,
+      required: true,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
     },
   },
+  { _id: false }
+);
+
+const ticketSchema = new mongoose.Schema(
   {
-    timestamps: true, // adds createdAt & updatedAt automatically
-  }
+    title: String,
+    description: String,
+    priority: String,
+    status: {
+      type: String,
+      default: "Open",
+    },
+    category: String,
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    messages: [messageSchema],
+  },
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("Ticket", ticketSchema);

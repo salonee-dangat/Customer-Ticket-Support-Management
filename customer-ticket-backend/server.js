@@ -21,6 +21,7 @@ app.use(cookieParser());
 
 // Import routes
 const authRoutes = require("./routes/auth");
+const adminRoutes = require("./routes/adminRoutes");
 const ticketRoutes = require("./routes/ticketRoutes");
 const userRoutes = require("./routes/userRoutes");
 
@@ -28,7 +29,7 @@ const userRoutes = require("./routes/userRoutes");
 app.use("/api/auth", authRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/users", userRoutes); // ✅ ONLY ONCE
-app.use("/api/admin", require("./routes/adminRoutes"));
+app.use("/api/admin", adminRoutes);
 
 
 // Connect MongoDB
