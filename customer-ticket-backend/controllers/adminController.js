@@ -7,15 +7,19 @@ const getAllUsers = async (req, res) => {
 
     const users = await User.find().select("-password");
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
+      count: users.length,
       users,
     });
+
   } catch (error) {
-    console.error("❌ FETCH USERS ERROR:", error);
-    res.status(500).json({
+    console.error("❌ FETCH USERS ERROR:", error.message);
+
+    return res.status(500).json({
       success: false,
       message: "Failed to fetch users",
+      error: error.message,
     });
   }
 };

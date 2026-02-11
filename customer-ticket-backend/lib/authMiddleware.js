@@ -2,15 +2,27 @@ const jwt = require("jsonwebtoken");
 
 const verifyToken = (req, res, next) => {
   try {
-    // ✅ Read token from Authorization header
-    const authHeader = req.headers.authorization;
+    let token;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    // ✅ 1. Check cookie first
+    if (req.cookies && req.cookies.token) {
+      token = req.cookies.token;
+    }
+
+    // ✅ 2. If not in cookie, check Authorization header (for safety)
+    else if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer ")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
+    }
+
+    // ❌ If still no token
+    if (!token) {
       return res.status(401).json({ message: "No token provided" });
     }
 
-    const token = authHeader.split(" ")[1];
-
+    // ✅ Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     req.user = {
@@ -24,15 +36,19 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-// Employee/User access
+// ✅ Employee/User access
 const allowEmployeeOrUser = (req, res, next) => {
-  if (req.user.role === "employee" || req.user.role === "user") return next();
+  if (req.user.role === "employee" || req.user.role === "user") {
+    return next();
+  }
   return res.status(403).json({ message: "Access denied" });
 };
 
-// Admin access
+// ✅ Admin access
 const allowAdmin = (req, res, next) => {
-  if (req.user.role === "admin") return next();
+  if (req.user.role === "admin") {
+    return next();
+  }
   return res.status(403).json({ message: "Admin access only" });
 };
 

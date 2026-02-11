@@ -4,11 +4,11 @@ import { Menu } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-type AdminHeaderProps = {
+type EmployeeHeaderProps = {
   onMenuClick: () => void;
 };
 
-export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
+export default function EmployeeHeader({ onMenuClick }: EmployeeHeaderProps) {
   const [unreadCount, setUnreadCount] = useState(0);
 
   const fetchNotifications = async () => {
@@ -36,21 +36,17 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
   return (
     <header className="sticky top-0 z-50 bg-white shadow-md px-4 py-3 flex items-center justify-between">
       
-      {/* Hamburger (mobile) */}
       <button className="md:hidden" onClick={onMenuClick}>
         <Menu />
       </button>
 
-      <h1 className="text-lg font-semibold text-purple-700">
-        Admin Dashboard
+      <h1 className="text-lg font-semibold text-blue-700">
+        Employee Dashboard
       </h1>
 
-      {/* Right Section */}
       <div className="flex items-center gap-6">
 
-        {/* Notification Bell */}
-        <Link href="/admin/notifications" className="relative">
-        
+        <Link href="/employee-dashboard/notifications" className="relative">
           🔔
           {unreadCount > 0 && (
             <span className="absolute -top-2 -right-3 bg-red-500 text-white text-xs px-2 rounded-full">
@@ -59,7 +55,7 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
           )}
         </Link>
 
-        <div className="text-sm text-gray-600">Admin</div>
+        <div className="text-sm text-gray-600">Employee</div>
       </div>
     </header>
   );

@@ -81,10 +81,13 @@ router.post("/login", async (req, res) => {
 
     const token = createToken(user);
 
-    res.cookie("token", token, {
+   res.clearCookie("token");
+
+res.cookie("token", token, {
   httpOnly: true,
-  sameSite: "none",   // 🔥 REQUIRED for different ports
-  secure: false,      // keep false for localhost
+  secure: false,        // keep false for localhost
+  sameSite: "lax",      // ✅ change from "none" to "lax"
+  path: "/",            // important
   maxAge: 7 * 24 * 60 * 60 * 1000,
 });
 

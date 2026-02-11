@@ -1,5 +1,8 @@
-import Navbar from "@/app/employee-dashboard/components/Navbar";
+"use client";
+
+import { useState } from "react";
 import Sidebar from "@/app/employee-dashboard/components/Sidebar";
+import EmployeeHeader from "@/app/components/employee/EmployeeHeader";
 import Footer from "@/app/employee-dashboard/components/Footer";
 
 export default function EmployeeDashboardLayout({
@@ -7,27 +10,28 @@ export default function EmployeeDashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-950 via-purple-900 to-pink-900">
+    <div className="min-h-screen flex bg-gradient-to-br from-indigo-950 via-purple-900 to-pink-900">
 
-      {/* Top Navbar */}
-      <Navbar />
+      {/* Sidebar */}
+      <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-      {/* Body */}
-      <div className="flex flex-1">
+      {/* Main content */}
+      <div className="flex-1 flex flex-col ml-56">
 
-        {/* Sidebar */}
-        <Sidebar />
+        {/* Header */}
+        <EmployeeHeader onMenuClick={() => setIsSidebarOpen(true)} />
 
-        {/* Main Content */}
-        <main className="ml-56 flex-1 p-8 overflow-y-auto">
+        {/* Page content */}
+        <main className="flex-1 p-6 overflow-y-auto">
           {children}
         </main>
 
+        {/* Footer */}
+        <Footer />
       </div>
-
-      {/* Footer */}
-      <Footer />
     </div>
   );
 }

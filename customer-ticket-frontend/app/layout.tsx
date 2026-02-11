@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
+import LayoutWrapper from "@/app/LayoutWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,27 +15,23 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "SupportHub - Customer Ticket System",
-  description: "Customer support ticket management system built with Next.js",
+  description:
+    "Customer support ticket management system built with Next.js",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
       >
-        {/* Header */}
-        <Header />
-
-        {/* Page Content */}
-        <main className="min-h-[calc(100vh-160px)]">{children}</main>
-
-        {/* Footer */}
-        <Footer />
+        <LayoutWrapper>
+          {children}
+        </LayoutWrapper>
       </body>
     </html>
   );

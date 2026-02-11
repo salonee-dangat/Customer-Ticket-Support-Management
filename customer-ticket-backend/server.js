@@ -2,6 +2,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const notificationRoutes = require("./routes/notificationRoutes");
+
 require("dotenv").config();
 
 // Initialize app
@@ -25,11 +27,13 @@ const adminRoutes = require("./routes/adminRoutes");
 const ticketRoutes = require("./routes/ticketRoutes");
 const userRoutes = require("./routes/userRoutes");
 
+
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/users", userRoutes); // ✅ ONLY ONCE
 app.use("/api/admin", adminRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 
 // Connect MongoDB

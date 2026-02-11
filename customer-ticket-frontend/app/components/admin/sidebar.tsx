@@ -17,6 +17,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
     { name: "Users", href: "/admin/users" },
     { name: "Tickets", href: "/admin/tickets" },
     { name: "Settings", href: "/admin/settings" },
+    { name: "Notifications", href: "/admin/notifications" }, // ✅ Add this
   ];
 
   return (
