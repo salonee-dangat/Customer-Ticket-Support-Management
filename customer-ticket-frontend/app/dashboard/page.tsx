@@ -1,25 +1,54 @@
 "use client";
-
-import { useState } from "react";
-import TicketForm from "./components/TicketForm";
-import MyTickets from "./components/MyTickets";
+import AdminLayout from "../layout";
+import StatCard from "@/app/components/admin/StatCard";
+import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [stats, setStats] = useState({
+    totalTickets: 0,
+    open: 0,
+    inProgress: 0,
+    closed: 0,
+    totalUsers: 0,
+  });
+
+  const fetchStats = async () => {
+    try {
+      const ticketsRes = await fetch("/api/admin/tickets");
+      const ticketsData = await ticketsRes.json();
+
+      const usersRes = await fetch("/api/admin/users");
+      const usersData = await usersRes.json();
+
+      const tickets = ticketsData.tickets || [];
+      const users = usersData.users || [];
+
+      setStats({
+        totalTickets: tickets.length,
+        open: tickets.filter((t: any) => t.status === "Open").length,
+        inProgress: tickets.filter((t: any) => t.status === "In Progress").length,
+        closed: tickets.filter((t: any) => t.status === "Closed").length,
+        totalUsers: users.length,
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-200 p-10">
-      <h1 className="text-3xl font-bold text-purple-800 mb-2">
-        User Dashboard
-      </h1>
-      <p className="text-purple-600 mb-8">
-        Raise and track your support tickets
-      </p>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <TicketForm onCreated={() => setRefreshKey((k) => k + 1)} />
-        <MyTickets refreshKey={refreshKey} />
+    <AdminLayout>
+      <h1 className="text-2xl font-bold mb-6">Welcome, Admin!</h1>
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <StatCard title="Total Tickets" value={stats.totalTickets} />
+        <StatCard title="Open Tickets" value={stats.open} />
+        <StatCard title="In Progress" value={stats.inProgress} />
+        <StatCard title="Closed Tickets" value={stats.closed} />
+        <StatCard title="Total Users" value={stats.totalUsers} />
       </div>
-    </div>
+    </AdminLayout>
   );
 }

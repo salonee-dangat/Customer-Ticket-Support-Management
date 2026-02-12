@@ -44,22 +44,22 @@ export default function AdminUsersPage() {
 
   if (loading)
     return (
-      <p className="p-6 text-lg text-gray-700 font-medium">
+      <p className="p-6 text-lg text-gray-300 font-medium">
         Loading users...
       </p>
     );
   if (error)
     return (
-      <p className="p-6 text-red-500 font-medium text-lg">{error}</p>
+      <p className="p-6 text-red-400 font-medium text-lg">{error}</p>
     );
 
   return (
-    <div className="p-6 bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100 min-h-screen rounded-xl shadow-inner">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">All Users</h1>
+    <div className="p-6 bg-gray-900 min-h-screen rounded-xl shadow-inner">
+      <h1 className="text-3xl font-bold mb-6 text-white">All Users</h1>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white rounded-lg shadow-md border border-gray-200">
-          <thead className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+        <table className="min-w-full bg-gray-800 rounded-lg shadow-md border border-gray-700">
+          <thead className="bg-gray-700 text-white">
             <tr>
               <th className="p-4 text-left">Name</th>
               <th className="p-4 text-left">Email</th>
@@ -71,11 +71,11 @@ export default function AdminUsersPage() {
             {users.map((user, idx) => (
               <tr
                 key={user._id}
-                className={idx % 2 === 0 ? "bg-gray-50" : "bg-gray-100"}
+                className={idx % 2 === 0 ? "bg-gray-800" : "bg-gray-700"}
               >
-                <td className="p-4">{user.name}</td>
-                <td className="p-4">{user.email}</td>
-                <td className="p-4 capitalize">{user.role}</td>
+                <td className="p-4 text-white">{user.name}</td>
+                <td className="p-4 text-gray-300">{user.email}</td>
+                <td className="p-4 capitalize text-purple-400">{user.role}</td>
               </tr>
             ))}
           </tbody>

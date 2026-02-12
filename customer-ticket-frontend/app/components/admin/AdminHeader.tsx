@@ -8,18 +8,18 @@ type AdminHeaderProps = {
 
 export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-md px-4 py-3 flex items-center justify-between">
-      
-      {/* Hamburger (mobile) */}
-      <button className="md:hidden" onClick={onMenuClick}>
-        <Menu />
+    <div className="flex justify-between items-center bg-white shadow p-4">
+      <button className="md:hidden text-pink-600 font-bold" onClick={onMenuClick}>
+        Menu
       </button>
-
-      <h1 className="text-lg font-semibold text-purple-700">
-        Admin Dashboard
-      </h1>
-
-      <div className="text-sm text-gray-600">Admin</div>
-    </header>
+      <h2 className="font-bold text-gray-900 text-xl">Admin Dashboard</h2>
+      <button 
+      onClick={() => {
+        localStorage.removeItem("token");
+        document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        window.location.href = "/login";
+      }}
+      className="bg-pink-600 text-white px-3 py-1 rounded">Logout</button>
+    </div>
   );
 }

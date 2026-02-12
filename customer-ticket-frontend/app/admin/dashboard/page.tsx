@@ -61,6 +61,14 @@ export default function AdminDashboard() {
     fetchUsers();
   }, []);
 
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    router.push("/login");
+    
+  };
+
   // Ticket stats
   const totalTickets = tickets.length;
   const openTickets = tickets.filter((t) => t.status === "open").length;
@@ -109,7 +117,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* User Stats & Pie Chart */}
-      <div className="grid grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 gap-6 mb-8">
         <div className="bg-white/90 p-6 rounded-xl shadow hover:shadow-xl transition">
           <h3 className="font-semibold text-lg mb-4">Total Users</h3>
           {loadingUsers ? (
@@ -118,8 +126,8 @@ export default function AdminDashboard() {
             <p className="text-3xl font-bold text-indigo-500">{users.length}</p>
           )}
         </div>
-
-        <div className="bg-white/90 p-6 rounded-xl shadow hover:shadow-xl transition">
+        
+        <div className="bg-white/90 p-6 rounded-xl shadow hover:shadow-xl transition ">
           <h3 className="font-semibold text-lg mb-4">Ticket Status Distribution</h3>
           <Pie data={pieData} />
         </div>
@@ -174,6 +182,13 @@ export default function AdminDashboard() {
           className="px-4 py-2 bg-purple-600 text-white rounded shadow hover:bg-purple-700 transition"
         >
           Settings
+        </button>
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 bg-pink-500 text-white rounded shadow hover:bg-red-600 transition"
+        >
+          Logout
         </button>
       </div>
     </div>

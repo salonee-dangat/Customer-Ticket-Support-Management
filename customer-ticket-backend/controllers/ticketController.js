@@ -77,6 +77,30 @@ const addMessageToTicket = async (req, res) => {
   }
 };
 
+// Get all messages for a ticket
+const getTicketMessages = async (req, res) => {
+  try {
+    const ticket = await Ticket.findById(req.params.id).populate("messages.sender", "name email"); // optional populate
+    if (!ticket) {
+      return res.status(404).json({
+        success: false,
+        message: "Ticket not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      messages: ticket.messages,
+    });
+  } catch (error) {
+    console.error("FETCH MESSAGES ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch messages",
+    });
+  }
+};
+
 module.exports = {
   createTicket,
   addMessageToTicket,

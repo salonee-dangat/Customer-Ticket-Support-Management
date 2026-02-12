@@ -16,38 +16,82 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", email: "" });
+  const [error, setError] = useState<string | null>(null);
 
   // ✅ Fetch real user
   useEffect(() => {
     const fetchProfile = async () => {
-      const res = await fetch("http://localhost:5050/api/users/me", {
-        credentials: "include",
-      });
-      const data = await res.json();
-      setUser(data);
-      setForm({ name: data.name, phone: data.phone || "", email: data.email });
-      setLoading(false);
+      try {
+        const token = localStorage.getItem("token"); // agar JWT localStorage me hai
+        const res = await fetch("http://localhost:5050/api/users/me", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          credentials: "include",
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          console.error("Failed to fetch profile:", text);
+          setError("Failed to fetch profile. Check console.");
+          setLoading(false);
+          return;
+        }
+
+        const data = await res.json();
+        console.log("🔥 PROFILE DATA:", data);
+
+        if (data.user) {
+          setUser(data.user);
+          setForm({
+            name: data.user.name || "",
+            phone: data.user.phone || "",
+            email: data.user.email || "",
+          });
+        } else {
+          setError("User data not found.");
+        }
+      } catch (err: any) {
+        console.error("Error fetching profile:", err);
+        setError("Error fetching profile. Check console.");
+      } finally {
+        setLoading(false);
+      }
     };
+
     fetchProfile();
   }, []);
 
   // ✅ Update profile
   const handleUpdate = async () => {
-    const res = await fetch("http://localhost:5050/api/users/me", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(form), // now includes email
-    });
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:5050/api/users/me", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: "include",
+        body: JSON.stringify(form),
+      });
 
-    const data = await res.json();
-    setUser(data);
-    setEditOpen(false);
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Failed to update profile:", text);
+        setError("Failed to update profile. Check console.");
+        return;
+      }
+
+      const data = await res.json();
+      if (data.user) setUser(data.user);
+      setEditOpen(false);
+    } catch (err: any) {
+      console.error("Error updating profile:", err);
+      setError("Error updating profile. Check console.");
+    }
   };
 
-  if (loading) {
-    return <p className="text-white p-10">Loading profile...</p>;
-  }
+  if (loading) return <p className="text-white p-10">Loading profile...</p>;
+  if (error) return <p className="text-red-400 p-10">{error}</p>;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-pink-700 p-8">
@@ -64,8 +108,10 @@ export default function ProfilePage() {
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold text-white">{user.name}</h2>
-            <p className="text-purple-200">{user.role}</p>
+            <h2 className="text-2xl font-semibold text-white">
+              {user?.name || "N/A"}
+            </h2>
+            <p className="text-purple-200">{user?.role || "-"}</p>
           </div>
 
           <button
@@ -78,12 +124,12 @@ export default function ProfilePage() {
 
         {/* Info Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Info label="Email" value={user.email} icon={<Mail />} />
-          <Info label="Phone" value={user.phone || "Not added"} icon={<Phone />} />
+          <Info label="Email" value={user?.email || "-"} icon={<Mail />} />
+          <Info label="Phone" value={user?.phone || "Not added"} icon={<Phone />} />
           <Info label="Account Status" value="Active" icon={<ShieldCheck />} />
           <Info
             label="Member Since"
-            value={new Date(user.createdAt).toDateString()}
+            value={user?.createdAt ? new Date(user.createdAt).toDateString() : "-"}
           />
         </div>
 

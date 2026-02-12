@@ -6,20 +6,9 @@ export default function StatCard({
   value: string | number;
 }) {
   return (
-    <div
-      style={{
-        padding: "16px",
-        background: "#435c75",
-        borderRadius: "8px",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
-      }}
-    >
-      <h3 style={{ fontSize: "24px", color: "#070707" }}>
-        {title}
-      </h3>
-      <p style={{ fontSize: "24px", fontWeight: "bold" }}>
-        {value}
-      </p>
+     <div className="bg-white p-4 rounded shadow flex flex-col items-center justify-center hover:shadow-lg cursor-pointer transition">
+      <h3 className="text-gray-500">{title}</h3>
+      <p className="text-2xl font-bold text-gray-900">{value}</p>
     </div>
   );
 }
