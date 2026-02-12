@@ -1,106 +1,214 @@
 "use client";
 
-import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function EmployeeDashboard() {
-  const employeeName = "Employee"; // later you can make this dynamic
+  const [view, setView] = useState<"home" | "create" | "track">("home");
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    priority: "Low",
+  });
+  const [loading, setLoading] = useState(false);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-pink-900 text-white px-10 py-12">
+  // ======================
+  // FETCH MY TICKETS
+  // ======================
+  const fetchTickets = async () => {
+    try {
+      const res = await fetch("http://localhost:5050/api/tickets", {
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (data.success) setTickets(data.tickets);
+    } catch {
+      console.error("Failed to fetch tickets");
+    }
+  };
 
-      {/* Top Welcome */}
-      <div className="mb-16">
-        <h1 className="text-5xl font-semibold tracking-tight">
-          Hello, {employeeName} 👋
-        </h1>
+  useEffect(() => {
+    if (view !== "home") fetchTickets();
+  }, [view]);
 
-        <p className="mt-5 text-xl text-purple-100 max-w-4xl leading-relaxed">
-          Welcome to your employee workspace. From here, you can create support tickets,
-          track their progress, and manage your daily activities in one unified place.
-        </p>
-      </div>
+  // ======================
+  // CREATE TICKET
+  // ======================
+  const handleCreateTicket = async () => {
+    if (!form.title || !form.description) return;
 
-      {/* Main Action Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mb-20">
+    setLoading(true);
+    try {
+      const res = await fetch("http://localhost:5050/api/tickets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(form),
+      });
 
-        {/* Create Ticket */}
-        <Link href="/dashboard">
-          <div className="cursor-pointer bg-gradient-to-br from-pink-500 to-purple-600 rounded-3xl p-10 shadow-2xl hover:scale-[1.02] transition-all">
+      const data = await res.json();
+      if (data.success) {
+        setForm({ title: "", description: "", priority: "Low" });
+        fetchTickets();
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ======================
+  // HOME DASHBOARD
+  // ======================
+  if (view === "home") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#2b1055] via-[#3b0f75] to-[#6a0572] text-white px-12 py-14">
+
+        {/* Welcome */}
+        <div className="mb-16 max-w-5xl">
+          <h1 className="text-5xl font-semibold mb-4 tracking-tight">
+            Hello Employee 👋
+          </h1>
+          <p className="text-purple-200 text-xl leading-relaxed">
+            Welcome to your employee workspace. Create tickets, track progress,
+            and manage your support activities — all in one elegant dashboard.
+          </p>
+        </div>
+
+        {/* Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+
+          {/* Create Ticket */}
+          <div
+            onClick={() => setView("create")}
+            className="bg-gradient-to-br from-pink-500/20 to-purple-600/20 
+                       border border-white/20 backdrop-blur-xl
+                       p-10 rounded-[32px] cursor-pointer shadow-2xl
+                       hover:scale-[1.03] hover:from-pink-500/30 hover:to-purple-600/30
+                       transition-all duration-300"
+          >
             <h2 className="text-3xl font-medium mb-4">🎫 Create Ticket</h2>
             <p className="text-purple-100 text-lg leading-relaxed">
-              Raise a new support ticket for any issue or request. Provide details and
-              submit it instantly for tracking and resolution.
+              Raise a new support ticket for any issue or request.
+              Provide details and submit it instantly for resolution.
             </p>
           </div>
-        </Link>
 
-        {/* Track Tickets */}
-        <Link href="/dashboard">
-          <div className="cursor-pointer bg-gradient-to-br from-indigo-500 to-purple-700 rounded-3xl p-10 shadow-2xl hover:scale-[1.02] transition-all">
+          {/* Track Tickets */}
+          <div
+            onClick={() => setView("track")}
+            className="bg-gradient-to-br from-indigo-500/20 to-purple-700/20 
+                       border border-white/20 backdrop-blur-xl
+                       p-10 rounded-[32px] cursor-pointer shadow-2xl
+                       hover:scale-[1.03] hover:from-indigo-500/30 hover:to-purple-700/30
+                       transition-all duration-300"
+          >
             <h2 className="text-3xl font-medium mb-4">📊 Track Tickets</h2>
             <p className="text-indigo-100 text-lg leading-relaxed">
-              View all tickets you have raised, check their current status, and follow
-              updates as they move through the support process.
+              View all tickets you have raised, monitor their status,
+              and follow updates through the support lifecycle.
             </p>
           </div>
-        </Link>
 
-        {/* Profile / Settings */}
-        <Link href="/employee-dashboard/profile">
-          <div className="cursor-pointer bg-white/10 backdrop-blur-xl rounded-3xl p-10 shadow-xl border border-white/20 hover:scale-[1.02] transition-all">
+          {/* Account */}
+          <div className="bg-white/10 border border-white/20 backdrop-blur-xl
+                          p-10 rounded-[32px] shadow-xl
+                          hover:scale-[1.03] hover:bg-white/20
+                          transition-all duration-300">
             <h2 className="text-3xl font-medium mb-4">⚙️ Account Overview</h2>
             <p className="text-gray-200 text-lg leading-relaxed">
-              You are logged in with employee access. Your account allows you to raise,
-              manage, and monitor tickets efficiently within the system.
+              You are logged in with employee access. Manage, raise,
+              and monitor tickets efficiently within the system.
             </p>
           </div>
-        </Link>
-      </div>
-
-      {/* Activity Section */}
-      <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-12 shadow-xl border border-white/20 mb-20">
-        <h3 className="text-3xl font-medium mb-6">
-          📌 Ticket Activity & Workflow
-        </h3>
-
-        <p className="text-lg text-gray-200 leading-relaxed mb-4">
-          Every ticket you create is recorded and tracked systematically. You can
-          monitor responses, updates, and resolutions in real time to stay informed
-          without unnecessary follow-ups.
-        </p>
-
-        <p className="text-lg text-gray-200 leading-relaxed">
-          This dashboard ensures transparency, efficiency, and a smooth communication
-          flow between you and the support team.
-        </p>
-      </div>
-
-      {/* Bottom Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-
-        <div className="bg-gradient-to-br from-purple-700 to-indigo-700 rounded-3xl p-10 shadow-xl">
-          <h4 className="text-2xl font-medium mb-3">🔒 Secure Environment</h4>
-          <p className="text-purple-100 text-lg leading-relaxed">
-            Your data and tickets are securely handled within the system, ensuring
-            privacy and reliability at all times.
-          </p>
         </div>
+      </div>
+    );
+  }
 
-        <div className="bg-gradient-to-br from-pink-600 to-purple-700 rounded-3xl p-10 shadow-xl">
-          <h4 className="text-2xl font-medium mb-3">🚀 Efficient Experience</h4>
-          <p className="text-pink-100 text-lg leading-relaxed">
-            Designed with simplicity and performance in mind, this dashboard helps you
-            complete tasks faster and with confidence.
-          </p>
+  // ======================
+  // CREATE / TRACK VIEW
+  // ======================
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#2b1055] via-[#3b0f75] to-[#6a0572] text-white px-10 py-10">
+      <button
+        onClick={() => setView("home")}
+        className="mb-8 text-purple-200 hover:text-white text-lg"
+      >
+        ← Back to Dashboard
+      </button>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+
+        {/* CREATE TICKET */}
+        {view === "create" && (
+          <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl">
+            <h2 className="text-3xl font-semibold mb-6">Create Ticket</h2>
+
+            <input
+              placeholder="Ticket Title"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              className="w-full mb-4 p-4 rounded-xl bg-white/20 outline-none"
+            />
+
+            <textarea
+              placeholder="Describe your issue..."
+              value={form.description}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
+              className="w-full mb-4 p-4 rounded-xl bg-white/20 outline-none h-36"
+            />
+
+            <select
+              value={form.priority}
+              onChange={(e) =>
+                setForm({ ...form, priority: e.target.value })
+              }
+              className="w-full mb-6 p-4 rounded-xl bg-white/20 outline-none"
+            >
+              <option>Low</option>
+              <option>Medium</option>
+              <option>High</option>
+            </select>
+
+            <button
+              onClick={handleCreateTicket}
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-pink-500 to-purple-600
+                         hover:opacity-90 py-4 rounded-xl text-lg font-semibold"
+            >
+              {loading ? "Creating..." : "Submit Ticket"}
+            </button>
+          </div>
+        )}
+
+        {/* MY TICKETS */}
+        <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl">
+          <h2 className="text-3xl font-semibold mb-6">My Tickets</h2>
+
+          {tickets.length === 0 ? (
+            <p className="text-purple-200">No tickets created yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {tickets.map((t) => (
+                <div
+                  key={t._id}
+                  className="p-5 rounded-2xl bg-white/10 hover:bg-white/20 transition"
+                >
+                  <h3 className="text-lg font-semibold">{t.title}</h3>
+                  <p className="text-sm text-purple-200">
+                    {t.priority} • {t.status}
+                  </p>
+                  <p className="text-sm text-purple-300 mt-1">
+                    {t.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-
       </div>
-
-      {/* Footer */}
-      <div className="mt-20 text-center text-purple-200 text-sm">
-        Built for a smooth and professional employee experience ✨
-      </div>
-
     </div>
   );
 }

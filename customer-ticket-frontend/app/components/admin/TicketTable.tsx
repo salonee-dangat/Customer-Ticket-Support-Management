@@ -19,7 +19,9 @@ export default function TicketTable() {
 
   // Fetch tickets from API
   const fetchTickets = async () => {
-    const res = await fetch("/api/admin/tickets");
+    const res = await fetch("http://localhost:5050/api/admin/tickets", {
+      headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
+    });
     const data = await res.json();
     setTickets(data);
     setLoading(false);
@@ -31,9 +33,11 @@ export default function TicketTable() {
 
   // Update ticket status dynamically
   const updateStatus = async (id: string, status: string) => {
-    await fetch("/api/admin/tickets", {
+    await fetch(`http://localhost:5050/api/admin/tickets/${id}/status`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`},
       body: JSON.stringify({ id, status }),
     });
     fetchTickets();
@@ -41,9 +45,9 @@ export default function TicketTable() {
 
   // Delete ticket dynamically
   const deleteTicket = async (id: string) => {
-    await fetch("/api/admin/tickets", {
+    await fetch("http://localhost:5050/api/admin/tickets", {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("token")}` },
       body: JSON.stringify({ id }),
     });
     fetchTickets();

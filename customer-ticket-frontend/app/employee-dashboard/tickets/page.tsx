@@ -1,211 +1,221 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 
-interface MyTicketsProps {
-  refreshKey: number;
+interface Message {
+  sender: string;
+  text: string;
+  createdAt: string;
 }
 
-export default function MyTickets({ refreshKey }: MyTicketsProps) {
-  const [tickets, setTickets] = useState<any[]>([]);
-  const [selectedTicket, setSelectedTicket] = useState<any>(null);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
+interface Ticket {
+  _id: string;
+  title: string;
+  description: string;
+  priority: string;
+  status: string;
+  category: string;
+  messages: Message[];
+}
+
+export default function MyTicketsPage() {
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [message, setMessage] = useState("");
-  const [sending, setSending] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  const USER_ID = "YOUR_LOGGED_IN_USER_ID"; // replace with actual logged-in user ID from auth
-
-  // Scroll to bottom helper
-  const scrollToBottom = () => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  // Fetch tickets
-  const fetchTickets = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `http://localhost:5050/api/tickets?page=${page}&limit=5`,
-        {
-          credentials: "include",
-        }
-      );
-      const data = await res.json();
-      setTickets(Array.isArray(data.tickets) ? data.tickets : []);
-    } catch (err) {
-      console.error("Failed to fetch tickets", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // ✅ Fetch Tickets
   useEffect(() => {
-    fetchTickets();
-  }, [page, refreshKey]);
+    const fetchTickets = async () => {
+      if (!token) {
+        setError("Token not found. Please login first.");
+        setLoading(false);
+        return;
+      }
 
-  // Open single ticket (fetch messages)
-  const openTicket = async (ticketId: string) => {
+      try {
+        const res = await fetch("http://localhost:5050/api/tickets/my", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        });
+
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          console.error("Invalid JSON response", text);
+          setError("Server returned invalid response. Check backend.");
+          return;
+        }
+
+        if (res.ok) {
+          setTickets(Array.isArray(data.tickets) ? data.tickets : []);
+        } else {
+          console.error("Fetch tickets failed", data);
+          setError(data.message || "Failed to fetch tickets");
+        }
+      } catch (err) {
+        console.error("FETCH TICKETS ERROR", err);
+        setError("Network error while fetching tickets");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTickets();
+  }, [token]);
+
+  // ✅ Send Message
+  const sendMessage = async () => {
+    if (!message || !selectedTicket || !token) return;
+
     try {
       const res = await fetch(
-        `http://localhost:5050/api/tickets/${ticketId}`,
-        { credentials: "include" }
-      );
-      const data = await res.json();
-      setSelectedTicket(data.ticket);
-    } catch (err) {
-      console.error("Failed to open ticket", err);
-    }
-  };
-
-  // Send message
-  const sendMessage = async () => {
-    if (!message.trim() || !selectedTicket) return;
-
-    setSending(true);
-    try {
-      await fetch(
         `http://localhost:5050/api/tickets/${selectedTicket._id}/message`,
         {
           method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({ text: message }),
         }
       );
 
-      // Optimistically update messages locally
-      setSelectedTicket((prev: any) => ({
-        ...prev,
-        messages: [
-          ...prev.messages,
-          { sender: USER_ID, text: message, createdAt: new Date().toISOString() },
-        ],
-      }));
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.error("Invalid JSON response", text);
+        setError("Server returned invalid response while sending message");
+        return;
+      }
 
-      setMessage("");
-      scrollToBottom();
+      if (res.ok) {
+        setSelectedTicket(data.ticket);
+        setMessage("");
+        // Update ticket list
+        setTickets((prev) =>
+          prev.map((t) => (t._id === data.ticket._id ? data.ticket : t))
+        );
+      } else {
+        console.error("Send message failed", data);
+        setError(data.message || "Failed to send message");
+      }
     } catch (err) {
-      console.error("Failed to send message", err);
-    } finally {
-      setSending(false);
+      console.error("SEND MESSAGE ERROR", err);
+      setError("Network error while sending message");
     }
   };
 
-  // Auto-scroll whenever messages change
-  useEffect(() => {
-    scrollToBottom();
-  }, [selectedTicket?.messages]);
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1a002e] via-[#2a003f] to-[#3b004f] text-purple-200">
+        Loading tickets...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1a002e] via-[#2a003f] to-[#3b004f] text-red-400">
+        {error}
+      </div>
+    );
+  }
 
   return (
-    <div className="rounded-2xl p-6 bg-gradient-to-br from-pink-500 to-purple-600 text-white shadow-lg">
-      <h2 className="text-2xl font-semibold">My Tickets</h2>
-      <p className="text-sm text-purple-200 mb-6">Tickets raised by you</p>
+    <div className="min-h-screen px-6 py-8 bg-gradient-to-br from-[#14001f] via-[#230033] to-[#3a004a] text-white">
+      <h1 className="text-3xl font-semibold mb-8 tracking-wide">
+        🎫 My Support Tickets
+      </h1>
 
-      {/* BACK BUTTON */}
-      {selectedTicket && (
-        <button
-          onClick={() => setSelectedTicket(null)}
-          className="text-sm mb-3 underline"
-        >
-          ← Back to tickets
-        </button>
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* LEFT PANEL */}
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-xl">
+          <h2 className="text-lg font-medium mb-4 text-pink-200">Your Tickets</h2>
 
-      {/* TICKET LIST */}
-      {!selectedTicket ? (
-        loading ? (
-          <p>Loading tickets...</p>
-        ) : tickets.length === 0 ? (
-          <p>No tickets found.</p>
-        ) : (
-          <div className="space-y-3">
-            {tickets.map((ticket) => (
+          {tickets.length === 0 ? (
+            <p className="text-purple-200">No tickets found</p>
+          ) : (
+            tickets.map((ticket) => (
               <div
                 key={ticket._id}
-                onClick={() => openTicket(ticket._id)}
-                className="p-4 rounded-xl bg-black/30 border border-pink-300 cursor-pointer hover:bg-black/40"
+                onClick={() => setSelectedTicket(ticket)}
+                className={`p-3 mb-3 rounded-xl cursor-pointer transition-all ${
+                  selectedTicket?._id === ticket._id
+                    ? "bg-gradient-to-r from-pink-600 to-purple-700"
+                    : "bg-white/5 hover:bg-white/10"
+                }`}
               >
                 <p className="font-medium">{ticket.title}</p>
-                <span className="text-sm text-pink-200">
-                  {ticket.priority || "Low"} Priority • {ticket.status}
-                </span>
+                <p className="text-sm text-purple-200">
+                  {ticket.priority} • {ticket.status} • {ticket.category}
+                </p>
               </div>
-            ))}
-          </div>
-        )
-      ) : (
-        /* CHAT VIEW */
-        <>
-          <h3 className="font-semibold mb-2">{selectedTicket.title}</h3>
-
-          <div className="bg-black/30 rounded-lg p-3 h-60 overflow-y-auto flex flex-col space-y-2">
-            {selectedTicket.messages?.length > 0 ? (
-              selectedTicket.messages.map((msg: any, i: number) => (
-                <div
-                  key={i}
-                  className={`text-sm p-2 rounded w-fit max-w-[70%] break-words ${
-                    msg.sender === USER_ID
-                      ? "bg-blue-200 text-black self-end"
-                      : "bg-pink-200 text-black self-start"
-                  }`}
-                >
-                  {msg.text}
-                  <div className="text-xs text-gray-600 mt-1">
-                    {new Date(msg.createdAt).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-purple-200">No messages yet</p>
-            )}
-            <div ref={chatEndRef} />
-          </div>
-
-          {/* SEND MESSAGE */}
-          <div className="flex gap-2 mt-3">
-            <input
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Type your message..."
-              className="flex-1 rounded px-3 py-2 text-black text-sm"
-              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-            />
-            <button
-              onClick={sendMessage}
-              disabled={sending}
-              className="bg-purple-800 px-4 rounded disabled:opacity-50"
-            >
-              Send
-            </button>
-          </div>
-        </>
-      )}
-
-      {/* PAGINATION */}
-      {!selectedTicket && (
-        <div className="flex justify-between mt-6">
-          <button
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
-            className="px-4 py-1 rounded bg-purple-800 disabled:opacity-50"
-            disabled={page === 1}
-          >
-            Previous
-          </button>
-
-          <button
-            onClick={() => setPage((p) => p + 1)}
-            className="px-4 py-1 rounded bg-purple-800"
-          >
-            Next
-          </button>
+            ))
+          )}
         </div>
-      )}
+
+        {/* RIGHT PANEL */}
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-xl flex flex-col">
+          {selectedTicket ? (
+            <>
+              <h2 className="font-medium text-pink-200 mb-3">
+                {selectedTicket.title}
+              </h2>
+
+              <div className="flex-1 overflow-y-auto rounded-xl bg-black/30 p-3 mb-3 space-y-2">
+                {selectedTicket.messages?.length ? (
+                  selectedTicket.messages.map((msg, i) => (
+                    <div
+                      key={i}
+                      className={`max-w-xs px-3 py-2 rounded-xl text-sm ${
+                        msg.sender === "admin"
+                          ? "bg-gradient-to-r from-purple-600 to-pink-600 ml-auto text-white"
+                          : "bg-white/20 text-white"
+                      }`}
+                    >
+                      {msg.text}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-purple-300">No messages yet</p>
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Type your message..."
+                  className="flex-1 bg-black/40 border border-white/20 rounded-xl px-3 py-2 text-white placeholder-purple-300 focus:outline-none"
+                />
+                <button
+                  onClick={sendMessage}
+                  disabled={!message}
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-pink-600 to-purple-700 hover:opacity-90 disabled:opacity-40"
+                >
+                  Send
+                </button>
+              </div>
+            </>
+          ) : (
+            <p className="text-purple-300 text-center mt-24">
+              Select a ticket to view chat
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
