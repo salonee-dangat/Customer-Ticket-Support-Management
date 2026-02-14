@@ -5,6 +5,7 @@ import Sidebar from "@/app/components/admin/sidebar";
 import AdminHeader from "@/app/components/admin/AdminHeader";
 import Footer from "@/app/components/Footer";
 
+
 export default function AdminLayout({
   children,
 }: {
