@@ -13,20 +13,31 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
 
-  // Fetch tickets
+  // Filters
+  const [search, setSearch] = useState("");
+  const [priority, setPriority] = useState("");
+  const [status, setStatus] = useState("");
+  const [showFilter, setShowFilter] = useState(false);
+
   const fetchTickets = async () => {
     setLoading(true);
     try {
+      const query = new URLSearchParams({
+        page: String(page),
+        limit: "5",
+        search,
+        priority,
+        status,
+      }).toString();
+
       const res = await fetch(
-        `http://localhost:5050/api/tickets?page=${page}&limit=5`,
-        {
-          credentials: "include",
-        }
+        `http://localhost:5050/api/tickets?${query}`,
+        { credentials: "include" }
       );
       const data = await res.json();
       setTickets(Array.isArray(data.tickets) ? data.tickets : []);
     } catch (err) {
-      console.error("Failed to fetch tickets", err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -36,135 +47,170 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
     fetchTickets();
   }, [page, refreshKey]);
 
-  // Open single ticket (fresh data)
-  const openTicket = async (ticketId: string) => {
+  const openTicket = async (id: string) => {
     const res = await fetch(
-      `http://localhost:5050/api/tickets/${ticketId}`,
-      {
-        credentials: "include",
-      }
+      `http://localhost:5050/api/tickets/${id}`,
+      { credentials: "include" }
     );
     const data = await res.json();
     setSelectedTicket(data.ticket);
   };
 
-  // Send message
   const sendMessage = async () => {
     if (!message.trim() || !selectedTicket) return;
 
     setSending(true);
-    try {
-      await fetch(
-        `http://localhost:5050/api/tickets/${selectedTicket._id}/message`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ text: message }),
-        }
-      );
-
-      setMessage("");
-      openTicket(selectedTicket._id); // refresh chat
-    } catch (err) {
-      console.error("Failed to send message", err);
-    } finally {
-      setSending(false);
-    }
+    await fetch(
+      `http://localhost:5050/api/tickets/${selectedTicket._id}/message`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: message }),
+      }
+    );
+    setMessage("");
+    openTicket(selectedTicket._id);
+    setSending(false);
   };
 
   return (
     <div className="rounded-2xl p-6 bg-gradient-to-br from-pink-500 to-purple-600 text-white shadow-lg">
-      <h2 className="text-2xl font-semibold">My Tickets</h2>
-      <p className="text-sm text-purple-200 mb-6">Tickets raised by you</p>
+      <div className="flex justify-between items-center mb-3">
+        <h2 className="text-2xl font-semibold">My Tickets</h2>
 
-      {/*  BACK BUTTON */}
-      {selectedTicket && (
-        <button
-          onClick={() => setSelectedTicket(null)}
-          className="text-sm mb-3 underline"
-        >
-          ← Back to tickets
-        </button>
+        {!selectedTicket && (
+          <button
+            onClick={() => setShowFilter(!showFilter)}
+            className="text-sm bg-purple-800 px-3 py-1 rounded"
+          >
+            Filters
+          </button>
+        )}
+      </div>
+
+      {/* Applied Filters (small corner chips) */}
+      {!selectedTicket && (search || priority || status) && (
+        <div className="flex gap-2 mb-3 text-xs">
+          {search && <span className="bg-black/40 px-2 py-1 rounded">🔍 {search}</span>}
+          {priority && <span className="bg-black/40 px-2 py-1 rounded">⚡ {priority}</span>}
+          {status && <span className="bg-black/40 px-2 py-1 rounded">📌 {status}</span>}
+        </div>
       )}
 
-      {/* TICKET LIST */}
+      {/* Filter Dropdown */}
+      {showFilter && !selectedTicket && (
+        <div className="bg-black/40 p-4 rounded-xl mb-4 space-y-2">
+          <input
+            placeholder="Search title..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded px-2 py-1 text-white bg-white/20 text-sm placeholder:text-gray-200"
+
+          />
+
+          <select
+  value={priority}
+  onChange={(e) => setPriority(e.target.value)}
+  className="w-full rounded px-2 py-1 text-black text-sm bg-white"
+>
+  <option value="">All Priority</option>
+  <option value="Low">Low</option>
+  <option value="Medium">Medium</option>
+  <option value="High">High</option>
+</select>
+
+          <select
+  value={status}
+  onChange={(e) => setStatus(e.target.value)}
+  className="w-full rounded px-2 py-1 text-black text-sm bg-white"
+>
+  <option value="">All Status</option>
+  <option value="Open">Open</option>
+  <option value="In Progress">In Progress</option>
+  <option value="Resolved">Resolved</option>
+</select>
+
+
+          <button
+            onClick={() => {
+              setPage(1);
+              fetchTickets();
+              setShowFilter(false);
+            }}
+            className="w-full bg-purple-800 py-1 rounded"
+          >
+            Apply Filter
+          </button>
+        </div>
+      )}
+
+      {/* Ticket List */}
       {!selectedTicket ? (
         loading ? (
-          <p>Loading tickets...</p>
+          <p>Loading...</p>
         ) : tickets.length === 0 ? (
           <p>No tickets found.</p>
         ) : (
           <div className="space-y-3">
-            {tickets.map((ticket) => (
+            {tickets.map((t) => (
               <div
-                key={ticket._id}
-                onClick={() => openTicket(ticket._id)}
-                className="p-4 rounded-xl bg-black/30 border border-pink-300 cursor-pointer hover:bg-black/40"
+                key={t._id}
+                onClick={() => openTicket(t._id)}
+                className="p-4 bg-black/30 rounded-xl cursor-pointer"
               >
-                <p className="font-medium">{ticket.title}</p>
+                <p className="font-medium">{t.title}</p>
                 <span className="text-sm text-pink-200">
-                  {ticket.priority || "Low"} Priority • {ticket.status}
+                  {t.priority} • {t.status}
                 </span>
               </div>
             ))}
           </div>
         )
       ) : (
-        /* CHAT VIEW */
         <>
+          <button
+            onClick={() => setSelectedTicket(null)}
+            className="text-sm underline mb-2"
+          >
+            ← Back
+          </button>
+
           <h3 className="font-semibold mb-2">{selectedTicket.title}</h3>
 
-          <div className="bg-black/30 rounded-lg p-3 h-60 overflow-y-auto space-y-2">
-            {selectedTicket.messages?.length > 0 ? (
-              selectedTicket.messages.map((msg: any, i: number) => (
-                <div
-                  key={i}
-                  className="bg-pink-200 text-black text-sm p-2 rounded w-fit"
-                >
-                  {msg.text}
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-purple-200">No messages yet</p>
-            )}
+          <div className="bg-black/30 h-60 p-3 rounded overflow-y-auto">
+            {selectedTicket.messages?.map((m: any, i: number) => (
+              <div key={i} className="bg-pink-200 text-black p-2 rounded mb-1 w-fit">
+                {m.text}
+              </div>
+            ))}
           </div>
 
-          {/* SEND MESSAGE */}
           <div className="flex gap-2 mt-3">
             <input
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Type your message..."
-              className="flex-1 rounded px-3 py-2 text-black text-sm"
+              className="flex-1 rounded px-2 text-black"
             />
-            <button
-              onClick={sendMessage}
-              disabled={sending}
-              className="bg-purple-800 px-4 rounded"
-            >
+            <button onClick={sendMessage} className="bg-purple-800 px-3 rounded">
               Send
             </button>
           </div>
         </>
       )}
 
-      {/* PAGINATION */}
       {!selectedTicket && (
-        <div className="flex justify-between mt-6">
+        <div className="flex justify-between mt-4">
           <button
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
-            className="px-4 py-1 rounded bg-purple-800 disabled:opacity-50"
             disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+            className="bg-purple-800 px-3 py-1 rounded"
           >
-            Previous
+            Prev
           </button>
-
           <button
-            onClick={() => setPage((p) => p + 1)}
-            className="px-4 py-1 rounded bg-purple-800"
+            onClick={() => setPage(page + 1)}
+            className="bg-purple-800 px-3 py-1 rounded"
           >
             Next
           </button>
