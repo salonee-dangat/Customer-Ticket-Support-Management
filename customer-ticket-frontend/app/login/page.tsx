@@ -32,7 +32,6 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Login failed");
 
-      // ✅ STORE TOKEN (THIS WAS MISSING)
       localStorage.setItem("token", data.token);
 
       if (data.user.role === "admin") {
@@ -48,36 +47,53 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-purple-200 px-4">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-xl shadow-md w-full max-w-md"
+        className="bg-white/70 backdrop-blur-lg border border-white/40 p-10 rounded-2xl shadow-xl w-full max-w-md transition-all duration-300"
       >
-        <h1 className="text-2xl font-bold mb-4">Login</h1>
+        <h1 className="text-3xl font-bold text-purple-800 text-center mb-2">
+          Welcome Back
+        </h1>
+        <p className="text-center text-purple-600 mb-6 text-sm">
+          Login to manage your support tickets
+        </p>
 
-        {error && <p className="text-red-500 mb-2">{error}</p>}
+        {error && (
+          <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
+        )}
 
-        <input
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          className="w-full p-3 mb-3 border rounded"
-        />
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-purple-700 mb-1">
+            Email
+          </label>
+          <input
+            name="email"
+            placeholder="Enter your email"
+            value={formData.email}
+            onChange={handleChange}
+            className="w-full p-3 rounded-lg border border-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition"
+          />
+        </div>
 
-        <input
-          name="password"
-          type="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          className="w-full p-3 mb-3 border rounded"
-        />
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-purple-700 mb-1">
+            Password
+          </label>
+          <input
+            name="password"
+            type="password"
+            placeholder="Enter your password"
+            value={formData.password}
+            onChange={handleChange}
+            className="w-full p-3 rounded-lg border border-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition"
+          />
+        </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-indigo-500 text-white py-2 rounded"
+          className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-200 disabled:opacity-70"
         >
           {loading ? "Logging in..." : "Login"}
         </button>

@@ -24,3 +24,18 @@ export const createTicket = async (ticketData) => {
     console.error("Error creating ticket:", error);
   }
 };
+// Get analytics
+export const getTicketAnalytics = async (filters = {}) => {
+  try {
+    const query = new URLSearchParams(filters).toString();
+    const response = await axios.get(`${BASE_URL}/tickets/analytics?${query}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching analytics:", error);
+    return {};
+  }
+};

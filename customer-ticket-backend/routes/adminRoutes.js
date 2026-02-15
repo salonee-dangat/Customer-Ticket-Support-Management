@@ -107,6 +107,33 @@ router.post(
   allowAdmin,
   addMessageToTicket
 );
+// ---------------- ADMIN: UPDATE TICKET STATUS ----------------
+router.put("/tickets/:id/status", async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    const updatedTicket = await Ticket.findByIdAndUpdate(
+      req.params.id,
+      { status: status },
+      { new: true }
+    );
+
+    if (!updatedTicket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Status updated successfully",
+      ticket: updatedTicket,
+    });
+  } catch (error) {
+    console.error("Status update error:", error);
+    res.status(500).json({ message: "Failed to update status" });
+  }
+});
+
+
 
 
 module.exports = router;

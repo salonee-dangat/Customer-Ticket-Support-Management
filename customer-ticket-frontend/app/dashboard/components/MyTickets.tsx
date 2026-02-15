@@ -32,8 +32,12 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
 
       const res = await fetch(
         `http://localhost:5050/api/tickets?${query}`,
-        { credentials: "include" }
+        {
+          credentials: "include",
+          cache: "no-store", // ✅ ensures latest admin updates
+        }
       );
+
       const data = await res.json();
       setTickets(Array.isArray(data.tickets) ? data.tickets : []);
     } catch (err) {
@@ -44,16 +48,21 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
   };
 
   useEffect(() => {
-    fetchTickets();
-  }, [page, refreshKey]);
+  fetchTickets();
+}, [page, search, priority, status]);
+
 
   const openTicket = async (id: string) => {
     const res = await fetch(
       `http://localhost:5050/api/tickets/${id}`,
-      { credentials: "include" }
+      {
+        credentials: "include",
+        cache: "no-store",
+      }
     );
+
     const data = await res.json();
-    setSelectedTicket(data.ticket);
+    setSelectedTicket(data); // ✅ fixed (backend returns ticket directly)
   };
 
   const sendMessage = async () => {
@@ -89,7 +98,6 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
         )}
       </div>
 
-      {/* Applied Filters (small corner chips) */}
       {!selectedTicket && (search || priority || status) && (
         <div className="flex gap-2 mb-3 text-xs">
           {search && <span className="bg-black/40 px-2 py-1 rounded">🔍 {search}</span>}
@@ -98,7 +106,6 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
         </div>
       )}
 
-      {/* Filter Dropdown */}
       {showFilter && !selectedTicket && (
         <div className="bg-black/40 p-4 rounded-xl mb-4 space-y-2">
           <input
@@ -106,31 +113,29 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded px-2 py-1 text-white bg-white/20 text-sm placeholder:text-gray-200"
-
           />
 
           <select
-  value={priority}
-  onChange={(e) => setPriority(e.target.value)}
-  className="w-full rounded px-2 py-1 text-black text-sm bg-white"
->
-  <option value="">All Priority</option>
-  <option value="Low">Low</option>
-  <option value="Medium">Medium</option>
-  <option value="High">High</option>
-</select>
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
+            className="w-full rounded px-2 py-1 text-black text-sm bg-white"
+          >
+            <option value="">All Priority</option>
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+          </select>
 
           <select
-  value={status}
-  onChange={(e) => setStatus(e.target.value)}
-  className="w-full rounded px-2 py-1 text-black text-sm bg-white"
->
-  <option value="">All Status</option>
-  <option value="Open">Open</option>
-  <option value="In Progress">In Progress</option>
-  <option value="Resolved">Resolved</option>
-</select>
-
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="w-full rounded px-2 py-1 text-black text-sm bg-white"
+          >
+            <option value="">All Status</option>
+            <option value="open">Open</option>
+            <option value="in-progress">In Progress</option>
+            <option value="closed">Closed</option>
+          </select>
 
           <button
             onClick={() => {
@@ -145,7 +150,6 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
         </div>
       )}
 
-      {/* Ticket List */}
       {!selectedTicket ? (
         loading ? (
           <p>Loading...</p>
@@ -191,8 +195,13 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               className="flex-1 rounded px-2 text-black"
+              disabled={selectedTicket.status === "closed"} // ✅ prevent message if closed
             />
-            <button onClick={sendMessage} className="bg-purple-800 px-3 rounded">
+            <button
+              onClick={sendMessage}
+              className="bg-purple-800 px-3 rounded"
+              disabled={selectedTicket.status === "closed"}
+            >
               Send
             </button>
           </div>

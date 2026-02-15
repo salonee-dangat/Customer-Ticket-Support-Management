@@ -8,6 +8,10 @@ type Ticket = {
   status: string;
   priority: string;
   category: string;
+  createdBy?: {
+    name?: string;
+    email?: string;
+  };
 };
 
 export default function TicketTable() {
@@ -19,10 +23,27 @@ export default function TicketTable() {
 
   // Fetch tickets from API
   const fetchTickets = async () => {
-    const res = await fetch("/api/admin/tickets");
-    const data = await res.json();
-    setTickets(data);
-    setLoading(false);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/tickets`,
+        {
+          headers: {
+            Authorization: `Bearer ${
+              typeof window !== "undefined"
+                ? localStorage.getItem("token")
+                : ""
+            }`,
+          },
+        }
+      );
+
+      const data = await res.json();
+      setTickets(data.tickets || data || []);
+      setLoading(false);
+    } catch (error) {
+      console.error("Failed to fetch tickets:", error);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -31,21 +52,33 @@ export default function TicketTable() {
 
   // Update ticket status dynamically
   const updateStatus = async (id: string, status: string) => {
-    await fetch("/api/admin/tickets", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, status }),
-    });
+    await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/admin/tickets`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ id, status }),
+      }
+    );
     fetchTickets();
   };
 
   // Delete ticket dynamically
   const deleteTicket = async (id: string) => {
-    await fetch("/api/admin/tickets", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-    });
+    await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/admin/tickets`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ id }),
+      }
+    );
     fetchTickets();
   };
 
@@ -93,6 +126,7 @@ export default function TicketTable() {
             <th>Status</th>
             <th>Priority</th>
             <th>Category</th>
+            <th>Raised By</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -105,7 +139,9 @@ export default function TicketTable() {
               <td>
                 <select
                   value={ticket.status}
-                  onChange={(e) => updateStatus(ticket._id, e.target.value)}
+                  onChange={(e) =>
+                    updateStatus(ticket._id, e.target.value)
+                  }
                 >
                   <option value="open">Open</option>
                   <option value="in-progress">In Progress</option>
@@ -114,15 +150,27 @@ export default function TicketTable() {
               </td>
               <td>{ticket.priority}</td>
               <td>{ticket.category}</td>
+
+              {/* ✅ NEW COLUMN */}
               <td>
-                <button onClick={() => deleteTicket(ticket._id)}>Delete</button>
+                {ticket.createdBy
+                  ? `${ticket.createdBy.name || ""} (${
+                      ticket.createdBy.email || ""
+                    })`
+                  : "N/A"}
+              </td>
+
+              <td>
+                <button onClick={() => deleteTicket(ticket._id)}>
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
 
           {filteredTickets.length === 0 && (
             <tr>
-              <td colSpan={6} align="center">
+              <td colSpan={7} align="center">
                 No tickets found
               </td>
             </tr>

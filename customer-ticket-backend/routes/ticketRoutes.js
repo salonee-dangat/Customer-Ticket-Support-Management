@@ -38,6 +38,7 @@ router.get("/", verifyToken, allowEmployeeOrUser, async (req, res) => {
     }
 
     const tickets = await Ticket.find(filter)
+  .populate("createdBy", "name email")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
@@ -70,5 +71,47 @@ router.get("/:id", verifyToken, allowEmployeeOrUser, async (req, res) => {
 
 // ✅ Add chat message
 router.post("/:id/message", verifyToken, addMessageToTicket);
+// ✅ Admin Ticket Analytics
+router.get("/analytics", verifyToken, async (req, res) => {
+  try {
+    const { status, priority, startDate, endDate } = req.query;
+
+    let filter = {};
+
+    // If admin → see all tickets
+    if (req.user.role !== "admin") {
+      filter.createdBy = req.user.id;
+    }
+
+    if (status) filter.status = status;
+    if (priority) filter.priority = priority;
+
+    if (startDate && endDate) {
+      filter.createdAt = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+
+    const total = await Ticket.countDocuments(filter);
+    const open = await Ticket.countDocuments({ ...filter, status: "open" });
+    const inProgress = await Ticket.countDocuments({ ...filter, status: "in-progress" });
+    const closed = await Ticket.countDocuments({ ...filter, status: "closed" });
+    const highPriority = await Ticket.countDocuments({ ...filter, priority: "high" });
+
+    res.json({
+      total,
+      open,
+      inProgress,
+      closed,
+      highPriority,
+    });
+
+  } catch (error) {
+    console.error("Analytics error:", error);
+    res.status(500).json({ message: "Failed to fetch analytics" });
+  }
+});
+
 
 module.exports = router;
