@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function AdminTickets() {
   const [tickets, setTickets] = useState<any[]>([]);
@@ -15,7 +16,7 @@ export default function AdminTickets() {
     try {
       setLoading(true);
 
-      let query = [];
+      let query: string[] = [];
 
       if (priority) query.push(`priority=${priority}`);
       if (status) query.push(`status=${status}`);
@@ -59,7 +60,7 @@ export default function AdminTickets() {
     <div className="bg-gradient-to-br from-pink-100 to-purple-200 p-6 rounded-xl shadow-xl text-black">
       <h1 className="text-2xl font-bold mb-6">Admin Tickets</h1>
 
-      {/* 🔍 SEARCH */}
+      {/* SEARCH */}
       <input
         type="text"
         placeholder="Search by title..."
@@ -68,10 +69,8 @@ export default function AdminTickets() {
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      {/* 🎛 FILTERS */}
+      {/* FILTERS */}
       <div className="flex flex-wrap gap-4 mb-6">
-
-        {/* Priority */}
         <select
           className="p-2 rounded border"
           value={priority}
@@ -83,7 +82,6 @@ export default function AdminTickets() {
           <option value="Low">Low</option>
         </select>
 
-        {/* Status */}
         <select
           className="p-2 rounded border"
           value={status}
@@ -96,7 +94,6 @@ export default function AdminTickets() {
           <option value="Closed">Closed</option>
         </select>
 
-        {/* Category */}
         <select
           className="p-2 rounded border"
           value={category}
@@ -107,7 +104,6 @@ export default function AdminTickets() {
           <option value="Billing">Billing</option>
           <option value="General">General</option>
         </select>
-
       </div>
 
       {/* TICKETS */}
@@ -118,35 +114,37 @@ export default function AdminTickets() {
       ) : (
         <div className="space-y-4">
           {tickets.map((ticket) => (
-            <div
+            <Link
               key={ticket._id}
-              className="bg-white p-4 rounded-lg shadow"
+              href={`/admin/tickets/${ticket._id}`}
             >
-              <h3 className="text-lg font-semibold">{ticket.title}</h3>
-              <p className="text-sm">{ticket.description}</p>
+              <div className="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-lg transition">
+                <h3 className="text-lg font-semibold">{ticket.title}</h3>
+                <p className="text-sm">{ticket.description}</p>
 
-              <div className="flex gap-4 items-center mt-3 text-sm">
-                <span
-                  className={`px-2 py-1 rounded text-white text-xs ${statusColor(
-                    ticket.status
-                  )}`}
-                >
-                  {ticket.status}
-                </span>
+                <div className="flex gap-4 items-center mt-3 text-sm">
+                  <span
+                    className={`px-2 py-1 rounded text-white text-xs ${statusColor(
+                      ticket.status
+                    )}`}
+                  >
+                    {ticket.status}
+                  </span>
 
-                <span>
-                  <b>Priority:</b> {ticket.priority}
-                </span>
+                  <span>
+                    <b>Priority:</b> {ticket.priority}
+                  </span>
 
-                <span>
-                  <b>Category:</b> {ticket.category || "N/A"}
-                </span>
+                  <span>
+                    <b>Category:</b> {ticket.category || "N/A"}
+                  </span>
 
-                <span>
-                  <b>User:</b> {ticket.createdBy?.name || "Unknown"}
-                </span>
+                  <span>
+                    <b>User:</b> {ticket.createdBy?.name || "Unknown"}
+                  </span>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

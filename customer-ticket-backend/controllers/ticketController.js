@@ -14,30 +14,31 @@ const createTicket = async (req, res) => {
       });
     }
 
+    const userId = req.user.id;
+
     const ticket = await Ticket.create({
       title,
       description,
       priority,
       category: category || "General",
       status: "Open",
-      createdBy: req.user.id,
+      createdBy: userId,
       messages: [],
       activityLog: [
         {
           action: "created",
-          performedBy: req.user.id,
+          performedBy: userId,
           message: "Ticket created",
         },
       ],
     });
 
-    // ✅ Notify all admins
     const admins = await User.find({ role: "admin" });
 
     for (let admin of admins) {
       await Notification.create({
         recipient: admin._id,
-        sender: req.user.id,
+        sender: userId,
         ticket: ticket._id,
         message: "New ticket has been created",
       });
@@ -55,6 +56,35 @@ const createTicket = async (req, res) => {
     });
   }
 };
+
+
+
+// ✅ GET SINGLE TICKET (VERY IMPORTANT FOR CHAT ALIGNMENT)
+const getSingleTicket = async (req, res) => {
+  try {
+    const ticket = await Ticket.findById(req.params.id)
+      .populate("createdBy", "_id name role")
+      .populate("messages.sender", "_id name role");
+
+    if (!ticket) {
+      return res.status(404).json({
+        success: false,
+        message: "Ticket not found",
+      });
+    }
+
+    res.status(200).json(ticket);
+
+  } catch (error) {
+    console.error("GET TICKET ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch ticket",
+    });
+  }
+};
+
+
 
 // ✅ Add Message to Ticket
 const addMessageToTicket = async (req, res) => {
@@ -77,48 +107,33 @@ const addMessageToTicket = async (req, res) => {
       });
     }
 
-    // ✅ Add message
-    ticket.messages.push({
-      sender: req.user.id,
-      text,
-    });
+    const userId = req.user.id;
 
-    // ✅ Add activity log
+    const newMessage = {
+      sender: userId,
+      text,
+      createdAt: new Date(),
+    };
+
+    ticket.messages.push(newMessage);
+
     ticket.activityLog.push({
       action: "reply_added",
-      performedBy: req.user.id,
+      performedBy: userId,
       message: "New reply added",
     });
 
     await ticket.save();
 
-    // ✅ Notification logic
-    if (req.user.role === "admin") {
-      // Notify ticket creator
-      await Notification.create({
-        recipient: ticket.createdBy,
-        sender: req.user.id,
-        ticket: ticket._id,
-        message: "Admin replied to your ticket",
-      });
-    } else {
-      // Notify all admins
-      const admins = await User.find({ role: "admin" });
+    // 🔥 IMPORTANT: populate sender before sending back
+    const updatedTicket = await Ticket.findById(ticket._id)
+      .populate("messages.sender", "_id name role");
 
-      for (let admin of admins) {
-        await Notification.create({
-          recipient: admin._id,
-          sender: req.user.id,
-          ticket: ticket._id,
-          message: "User replied to a ticket",
-        });
-      }
-    }
+    const populatedMessage =
+      updatedTicket.messages[updatedTicket.messages.length - 1];
 
-    res.status(200).json({
-      success: true,
-      message: "Message added successfully",
-    });
+    res.status(201).json(populatedMessage);
+
   } catch (error) {
     console.error("ADD MESSAGE ERROR:", error);
     res.status(500).json({
@@ -130,5 +145,6 @@ const addMessageToTicket = async (req, res) => {
 
 module.exports = {
   createTicket,
+  getSingleTicket,
   addMessageToTicket,
 };

@@ -19,9 +19,12 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
 
       const data = await res.json();
 
-      const unread = data.notifications.filter(
-        (n: any) => !n.read
-      ).length;
+const notifications = Array.isArray(data.notifications)
+  ? data.notifications
+  : [];
+
+const unread = notifications.filter((n: any) => !n.read).length;
+
 
       setUnreadCount(unread);
     } catch (error) {

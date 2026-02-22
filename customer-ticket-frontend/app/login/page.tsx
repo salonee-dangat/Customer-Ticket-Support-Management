@@ -32,7 +32,17 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Login failed");
 
+      // ✅ Store token
       localStorage.setItem("token", data.token);
+
+      // ✅ Store role
+      localStorage.setItem("role", data.user.role);
+
+      // ✅ VERY IMPORTANT: Store userId for chat alignment
+      localStorage.setItem("userId", data.user._id?.toString());
+
+      // ✅ Optional cleanup (removes old wrong values if any)
+      console.log("Saved userId:", data.user._id);
 
       if (data.user.role === "admin") {
         router.push("/admin/dashboard");

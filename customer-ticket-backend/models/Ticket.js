@@ -16,13 +16,13 @@ const messageSchema = new mongoose.Schema(
       default: Date.now,
     },
   },
-  { _id: false }
+  { _id: true } // ✅ allow message id
 );
 
 // ✅ Activity Log Schema
 const activitySchema = new mongoose.Schema(
   {
-    action: String, // created, reply_added, status_changed
+    action: String,
     performedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -71,9 +71,10 @@ const ticketSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+
+    // ✅ Embedded messages
     messages: [messageSchema],
 
-    // ✅ NEW FIELDS
     activityLog: [activitySchema],
     notifications: [notificationSchema],
   },

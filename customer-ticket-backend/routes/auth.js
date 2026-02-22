@@ -9,8 +9,8 @@ const router = express.Router();
 const createToken = (user) => {
   return jwt.sign(
     {
-      id: user._id,
-      role: user.role, // user, employee, or admin
+      _id: user._id,
+      role: user.role,
     },
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
@@ -37,22 +37,22 @@ router.post("/register", async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role: role || "employee", // default role
+      role: role || "employee",
     });
 
     const token = createToken(user);
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // true if using HTTPS
+      secure: false,
       sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.status(201).json({
       message: "User registered successfully",
       user: {
-        id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
@@ -74,38 +74,59 @@ router.post("/login", async (req, res) => {
     }
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ message: "Invalid email or password" });
+    if (!user)
+      return res.status(401).json({ message: "Invalid email or password" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: "Invalid email or password" });
+    if (!isMatch)
+      return res.status(401).json({ message: "Invalid email or password" });
 
     const token = createToken(user);
 
-   res.clearCookie("token");
+    res.clearCookie("token");
 
-res.cookie("token", token, {
-  httpOnly: true,
-  secure: false,        // keep false for localhost
-  sameSite: "lax",      // ✅ change from "none" to "lax"
-  path: "/",            // important
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-});
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
-    // ✅ Return role for frontend redirection
     res.json({
       message: "Login successful",
       token,
       user: {
-        id: user._id,
+        _id: user._id,   // ✅ ONLY THIS LINE CHANGED (id → _id)
         name: user.name,
         email: user.email,
         role: user.role,
       },
-      redirectTo: user.role === "admin" ? "/admin/dashboard" : "/employee-dashboard",
+      redirectTo:
+        user.role === "admin"
+          ? "/admin/dashboard"
+          : "/employee-dashboard",
     });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+// --------------------- LOGOUT ---------------------
+router.post("/logout", (req, res) => {
+  try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      path: "/",
+    });
+
+    return res.status(200).json({ message: "Logged out successfully" });
+  } catch (err) {
+    console.error("Logout error:", err);
+    res.status(500).json({ message: "Server error during logout" });
   }
 });
 

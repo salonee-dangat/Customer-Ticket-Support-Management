@@ -9,10 +9,11 @@ const {
 
 const { verifyToken, allowEmployeeOrUser } = require("../lib/authMiddleware");
 
-// Create ticket
+// ✅ Create ticket
 router.post("/", verifyToken, allowEmployeeOrUser, createTicket);
 
-// Get user tickets
+
+// ✅ Get user tickets (FIXED - added populate for messages.sender)
 router.get("/", verifyToken, allowEmployeeOrUser, async (req, res) => {
   try {
     const { priority, status, search, category, page = 1, limit = 5 } = req.query;
@@ -21,24 +22,14 @@ router.get("/", verifyToken, allowEmployeeOrUser, async (req, res) => {
       createdBy: req.user.id,
     };
 
-    if (priority) {
-      filter.priority = priority;
-    }
-
-    if (status) {
-      filter.status = status;
-    }
-
-    if (category) {
-      filter.category = category;
-    }
-
-    if (search) {
-      filter.title = { $regex: search, $options: "i" };
-    }
+    if (priority) filter.priority = priority;
+    if (status) filter.status = status;
+    if (category) filter.category = category;
+    if (search) filter.title = { $regex: search, $options: "i" };
 
     const tickets = await Ticket.find(filter)
-  .populate("createdBy", "name email")
+      .populate("createdBy", "name email role")
+      .populate("messages.sender", "_id name role") // 🔥 IMPORTANT
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
@@ -50,10 +41,14 @@ router.get("/", verifyToken, allowEmployeeOrUser, async (req, res) => {
     res.status(500).json({ message: "Failed to fetch tickets" });
   }
 });
-// ✅ Get single ticket by ID
+
+
+// ✅ Get single ticket (ALREADY CORRECT)
 router.get("/:id", verifyToken, allowEmployeeOrUser, async (req, res) => {
   try {
-    const ticket = await Ticket.findById(req.params.id);
+    const ticket = await Ticket.findById(req.params.id)
+      .populate("createdBy", "name email role")
+      .populate("messages.sender", "_id name role"); // 🔥 IMPORTANT
 
     if (!ticket) {
       return res.status(404).json({ message: "Ticket not found" });
@@ -68,9 +63,10 @@ router.get("/:id", verifyToken, allowEmployeeOrUser, async (req, res) => {
 });
 
 
-
 // ✅ Add chat message
 router.post("/:id/message", verifyToken, addMessageToTicket);
+
+
 // ✅ Admin Ticket Analytics
 router.get("/analytics", verifyToken, async (req, res) => {
   try {
@@ -78,7 +74,6 @@ router.get("/analytics", verifyToken, async (req, res) => {
 
     let filter = {};
 
-    // If admin → see all tickets
     if (req.user.role !== "admin") {
       filter.createdBy = req.user.id;
     }
@@ -112,6 +107,5 @@ router.get("/analytics", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Failed to fetch analytics" });
   }
 });
-
 
 module.exports = router;
