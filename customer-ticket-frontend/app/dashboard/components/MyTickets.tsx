@@ -13,7 +13,6 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
 
-  // Filters
   const [search, setSearch] = useState("");
   const [priority, setPriority] = useState("");
   const [status, setStatus] = useState("");
@@ -34,7 +33,7 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
         `http://localhost:5050/api/tickets?${query}`,
         {
           credentials: "include",
-          cache: "no-store", // ✅ ensures latest admin updates
+          cache: "no-store",
         }
       );
 
@@ -48,9 +47,8 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
   };
 
   useEffect(() => {
-  fetchTickets();
-}, [page, search, priority, status]);
-
+    fetchTickets();
+  }, [page, search, priority, status]);
 
   const openTicket = async (id: string) => {
     const res = await fetch(
@@ -60,9 +58,8 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
         cache: "no-store",
       }
     );
-
     const data = await res.json();
-    setSelectedTicket(data); // ✅ fixed (backend returns ticket directly)
+    setSelectedTicket(data);
   };
 
   const sendMessage = async () => {
@@ -84,41 +81,34 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
   };
 
   return (
-    <div className="rounded-2xl p-6 bg-gradient-to-br from-pink-500 to-purple-600 text-white shadow-lg">
-      <div className="flex justify-between items-center mb-3">
+    <div className="rounded-2xl p-6 bg-gradient-to-br from-purple-400 to-fuchsia-500 text-white shadow-xl">
+
+      <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-semibold">My Tickets</h2>
 
         {!selectedTicket && (
           <button
             onClick={() => setShowFilter(!showFilter)}
-            className="text-sm bg-purple-800 px-3 py-1 rounded"
+            className="text-sm bg-white/20 hover:bg-white/30 px-4 py-1 rounded-lg transition"
           >
             Filters
           </button>
         )}
       </div>
 
-      {!selectedTicket && (search || priority || status) && (
-        <div className="flex gap-2 mb-3 text-xs">
-          {search && <span className="bg-black/40 px-2 py-1 rounded">🔍 {search}</span>}
-          {priority && <span className="bg-black/40 px-2 py-1 rounded">⚡ {priority}</span>}
-          {status && <span className="bg-black/40 px-2 py-1 rounded">📌 {status}</span>}
-        </div>
-      )}
-
       {showFilter && !selectedTicket && (
-        <div className="bg-black/40 p-4 rounded-xl mb-4 space-y-2">
+        <div className="bg-white/15 backdrop-blur-md p-4 rounded-xl mb-4 space-y-3">
           <input
             placeholder="Search title..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded px-2 py-1 text-white bg-white/20 text-sm placeholder:text-gray-200"
+            className="w-full rounded px-3 py-2 text-black text-sm"
           />
 
           <select
             value={priority}
             onChange={(e) => setPriority(e.target.value)}
-            className="w-full rounded px-2 py-1 text-black text-sm bg-white"
+            className="w-full rounded px-3 py-2 text-black text-sm"
           >
             <option value="">All Priority</option>
             <option value="Low">Low</option>
@@ -129,7 +119,7 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="w-full rounded px-2 py-1 text-black text-sm bg-white"
+            className="w-full rounded px-3 py-2 text-black text-sm"
           >
             <option value="">All Status</option>
             <option value="open">Open</option>
@@ -143,7 +133,7 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
               fetchTickets();
               setShowFilter(false);
             }}
-            className="w-full bg-purple-800 py-1 rounded"
+            className="w-full bg-gradient-to-r from-pink-500 to-purple-600 py-2 rounded-lg shadow-md hover:scale-[1.02] transition"
           >
             Apply Filter
           </button>
@@ -152,19 +142,19 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
 
       {!selectedTicket ? (
         loading ? (
-          <p>Loading...</p>
+          <p className="text-white/80">Loading...</p>
         ) : tickets.length === 0 ? (
-          <p>No tickets found.</p>
+          <p className="text-white/80">No tickets found.</p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {tickets.map((t) => (
               <div
                 key={t._id}
                 onClick={() => openTicket(t._id)}
-                className="p-4 bg-black/30 rounded-xl cursor-pointer"
+                className="p-4 bg-white/15 backdrop-blur-md rounded-xl cursor-pointer hover:bg-white/25 transition"
               >
-                <p className="font-medium">{t.title}</p>
-                <span className="text-sm text-pink-200">
+                <p className="font-semibold text-lg">{t.title}</p>
+                <span className="text-sm text-white/80">
                   {t.priority} • {t.status}
                 </span>
               </div>
@@ -175,31 +165,36 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
         <>
           <button
             onClick={() => setSelectedTicket(null)}
-            className="text-sm underline mb-2"
+            className="text-sm underline mb-3 text-white/80"
           >
             ← Back
           </button>
 
-          <h3 className="font-semibold mb-2">{selectedTicket.title}</h3>
+          <h3 className="font-semibold text-lg mb-3">
+            {selectedTicket.title}
+          </h3>
 
-          <div className="bg-black/30 h-60 p-3 rounded overflow-y-auto">
+          <div className="bg-white/15 backdrop-blur-md h-60 p-3 rounded-xl overflow-y-auto mb-3">
             {selectedTicket.messages?.map((m: any, i: number) => (
-              <div key={i} className="bg-pink-200 text-black p-2 rounded mb-1 w-fit">
+              <div
+                key={i}
+                className="bg-white/25 text-white p-2 rounded-lg mb-2 w-fit"
+              >
                 {m.text}
               </div>
             ))}
           </div>
 
-          <div className="flex gap-2 mt-3">
+          <div className="flex gap-2">
             <input
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="flex-1 rounded px-2 text-black"
-              disabled={selectedTicket.status === "closed"} // ✅ prevent message if closed
+              className="flex-1 rounded px-3 py-2 text-black"
+              disabled={selectedTicket.status === "closed"}
             />
             <button
               onClick={sendMessage}
-              className="bg-purple-800 px-3 rounded"
+              className="bg-gradient-to-r from-pink-500 to-purple-600 px-4 rounded-lg shadow-md hover:scale-[1.02] transition"
               disabled={selectedTicket.status === "closed"}
             >
               Send
@@ -209,17 +204,17 @@ export default function MyTickets({ refreshKey }: MyTicketsProps) {
       )}
 
       {!selectedTicket && (
-        <div className="flex justify-between mt-4">
+        <div className="flex justify-between mt-6">
           <button
             disabled={page === 1}
             onClick={() => setPage(page - 1)}
-            className="bg-purple-800 px-3 py-1 rounded"
+            className="bg-white/20 px-4 py-1 rounded-lg hover:bg-white/30 transition disabled:opacity-50"
           >
             Prev
           </button>
           <button
             onClick={() => setPage(page + 1)}
-            className="bg-purple-800 px-3 py-1 rounded"
+            className="bg-white/20 px-4 py-1 rounded-lg hover:bg-white/30 transition"
           >
             Next
           </button>

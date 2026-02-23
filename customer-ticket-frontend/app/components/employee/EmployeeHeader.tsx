@@ -3,6 +3,7 @@
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type EmployeeHeaderProps = {
   onMenuClick: () => void;
@@ -10,6 +11,8 @@ type EmployeeHeaderProps = {
 
 export default function EmployeeHeader({ onMenuClick }: EmployeeHeaderProps) {
   const [unreadCount, setUnreadCount] = useState(0);
+  const [employeeName, setEmployeeName] = useState("Employee");
+  const router = useRouter();
 
   const fetchNotifications = async () => {
     try {
@@ -17,11 +20,13 @@ export default function EmployeeHeader({ onMenuClick }: EmployeeHeaderProps) {
         credentials: "include",
       });
 
+      if (!res.ok) return;
+
       const data = await res.json();
 
-      const unread = data.notifications.filter(
-        (n: any) => !n.read
-      ).length;
+      const unread = Array.isArray(data?.notifications)
+        ? data.notifications.filter((n: any) => !n.read).length
+        : 0;
 
       setUnreadCount(unread);
     } catch (error) {
@@ -29,13 +34,45 @@ export default function EmployeeHeader({ onMenuClick }: EmployeeHeaderProps) {
     }
   };
 
+  const fetchUser = async () => {
+    try {
+      const res = await fetch("http://localhost:5050/api/users/me", {
+        credentials: "include",
+      });
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      if (data?.name) setEmployeeName(data.name);
+    } catch (error) {
+      console.error("User fetch error:", error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch("http://localhost:5050/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
   useEffect(() => {
     fetchNotifications();
+    fetchUser();
+
+    // ✅ Poll for unread notifications every 10 seconds
+    const interval = setInterval(fetchNotifications, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-md px-4 py-3 flex items-center justify-between">
-      
       <button className="md:hidden" onClick={onMenuClick}>
         <Menu />
       </button>
@@ -45,7 +82,6 @@ export default function EmployeeHeader({ onMenuClick }: EmployeeHeaderProps) {
       </h1>
 
       <div className="flex items-center gap-6">
-
         <Link href="/employee-dashboard/notifications" className="relative">
           🔔
           {unreadCount > 0 && (
@@ -55,7 +91,15 @@ export default function EmployeeHeader({ onMenuClick }: EmployeeHeaderProps) {
           )}
         </Link>
 
-        <div className="text-sm text-gray-600">Employee</div>
+        <div className="flex items-center gap-4 text-sm text-gray-600">
+          <span>{employeeName}</span>
+          <button
+            onClick={handleLogout}
+            className="text-red-500 hover:text-red-700 transition"
+          >
+            Logout
+          </button>
+        </div>
       </div>
     </header>
   );

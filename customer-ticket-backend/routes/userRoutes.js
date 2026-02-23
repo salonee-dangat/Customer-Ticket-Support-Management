@@ -13,12 +13,12 @@ router.get("/me", verifyToken, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     res.json({
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      joinedAt: user.createdAt,
-    });
+  id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  createdAt: user.createdAt, // ✅ FIX
+});
   } catch (err) {
     console.error("Fetch user error:", err);
     res.status(500).json({ message: "Server error" });

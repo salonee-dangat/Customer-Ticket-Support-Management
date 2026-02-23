@@ -27,8 +27,18 @@ export default function NotificationsPage() {
         credentials: "include",
       });
 
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("API Error:", text);
+        // ✅ Redirect to login if no token
+        if (text.includes("No token provided")) {
+          window.location.href = "/login";
+          return;
+        }
+      }
+
       const data = await res.json();
-      setNotifications(data.notifications);
+      setNotifications(data.notifications || []); // ✅ Always array
     } catch (error) {
       console.error("Fetch notifications error:", error);
     } finally {
@@ -37,19 +47,23 @@ export default function NotificationsPage() {
   };
 
   const markAsRead = async (id: string) => {
-    await fetch(
-      `http://localhost:5050/api/notifications/${id}/read`,
-      {
+    try {
+      await fetch(`http://localhost:5050/api/notifications/${id}/read`, {
         method: "PUT",
         credentials: "include",
-      }
-    );
-
-    fetchNotifications();
+      });
+      fetchNotifications(); // ✅ Refresh after marking as read
+    } catch (error) {
+      console.error("Mark as read error:", error);
+    }
   };
 
   useEffect(() => {
     fetchNotifications();
+
+    // ✅ Optional: Poll every 10s for new notifications
+    const interval = setInterval(fetchNotifications, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) return <p>Loading notifications...</p>;
@@ -58,9 +72,7 @@ export default function NotificationsPage() {
     <div className="p-6">
       <h2 className="text-xl font-bold mb-4">Notifications</h2>
 
-      {notifications.length === 0 && (
-        <p>No notifications yet.</p>
-      )}
+      {notifications.length === 0 && <p>No notifications yet.</p>}
 
       {notifications.map((notif) => (
         <div

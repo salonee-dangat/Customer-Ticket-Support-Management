@@ -13,25 +13,27 @@ export default function AdminLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-pink-200 to-purple-300">
-      
+  <div className="min-h-screen flex flex-col bg-gradient-to-br from-pink-200 to-purple-300">
+
+    {/* Header */}
+    <AdminHeader onMenuClick={() => setIsSidebarOpen(true)} />
+
+    {/* Sidebar + Content section */}
+    <div className="flex flex-1">
+
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-      {/* ✅ Main content (SHIFTED RIGHT BY SIDEBAR WIDTH) */}
-      <div className="flex-1 flex flex-col md:ml-[240px]">
-        
-        {/* Header */}
-        <AdminHeader onMenuClick={() => setIsSidebarOpen(true)} />
-
-        {/* Page content */}
+      {/* Main content */}
+      <div className="flex-1 flex flex-col">
         <main className="flex-1 p-4 md:p-6 overflow-y-auto">
           {children}
         </main>
 
-        {/* Footer */}
         <Footer />
       </div>
+
     </div>
-  );
+  </div>
+);
 }

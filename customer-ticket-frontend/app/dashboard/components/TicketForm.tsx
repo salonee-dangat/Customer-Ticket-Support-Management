@@ -54,7 +54,7 @@ export default function TicketForm({ onCreated }: TicketFormProps) {
   };
 
   return (
-    <div className="rounded-2xl p-6 bg-gradient-to-br from-pink-500 to-purple-600 text-white shadow-lg">
+    <div className="rounded-2xl p-6 bg-gradient-to-br from-purple-400 to-fuchsia-500 text-white shadow-lg">
       <h2 className="text-2xl font-semibold">Create Ticket</h2>
       <p className="text-sm text-pink-100 mb-6">Raise a new support request</p>
 

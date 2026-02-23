@@ -86,7 +86,7 @@ const getSingleTicket = async (req, res) => {
 
 
 
-// ✅ Add Message to Ticket
+/// ✅ Add Message to Ticket
 const addMessageToTicket = async (req, res) => {
   try {
     const { text } = req.body;
@@ -125,7 +125,34 @@ const addMessageToTicket = async (req, res) => {
 
     await ticket.save();
 
-    // 🔥 IMPORTANT: populate sender before sending back
+    // 🔥 NEW: CREATE NOTIFICATION
+    const ticketOwnerId = ticket.createdBy.toString();
+
+    // If admin replied → notify employee
+    if (req.user.role === "admin") {
+      await Notification.create({
+        recipient: ticketOwnerId,
+        sender: userId,
+        ticket: ticket._id,
+        message: "Admin replied to your ticket",
+      });
+    }
+
+    // If employee replied → notify all admins
+    if (req.user.role !== "admin") {
+      const admins = await User.find({ role: "admin" });
+
+      for (let admin of admins) {
+        await Notification.create({
+          recipient: admin._id,
+          sender: userId,
+          ticket: ticket._id,
+          message: "Employee replied to a ticket",
+        });
+      }
+    }
+
+    // 🔥 Populate sender before sending back
     const updatedTicket = await Ticket.findById(ticket._id)
       .populate("messages.sender", "_id name role");
 

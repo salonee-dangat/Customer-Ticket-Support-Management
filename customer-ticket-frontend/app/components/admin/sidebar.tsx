@@ -37,15 +37,10 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
 
   return (
     <>
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 z-40 md:hidden"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
+  
 
       <aside
-        className={`fixed top-0 left-0 h-screen w-[240px] z-50
+        className={`relative w-[240px] 
         bg-gray-900 text-white flex flex-col
         transition-transform duration-300
         ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
@@ -81,14 +76,15 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         </nav>
 
         {/* Logout at Bottom */}
-        <div className="p-5">
-          <button
-            onClick={handleLogout}
-            className="w-full py-2 rounded-lg bg-pink-200 text-pink-900 font-medium hover:bg-pink-300 transition duration-200"
-          >
-            Logout
-          </button>
-        </div>
+        {/* Logout at Bottom */}
+<div className="p-5 mt-auto">
+  <button
+    onClick={handleLogout}
+    className="w-full py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition duration-200"
+  >
+    Logout
+  </button>
+</div>
       </aside>
     </>
   );

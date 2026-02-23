@@ -39,49 +39,62 @@ export default function SettingsPage() {
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="max-w-3xl mx-auto bg-white rounded-xl shadow p-6">
-      <h1 className="text-2xl font-bold mb-1">Settings</h1>
-      <p className="text-gray-500 mb-6">
-        Manage your personal information and account preferences
-      </p>
+  <div className="max-w-3xl mx-auto bg-gradient-to-br from-purple-400 to-fuchsia-400 rounded-3xl shadow-2xl p-8 text-white">
 
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium">Full Name</label>
-          <input
-            value={user.name}
-            disabled
-            className="w-full border px-3 py-2 rounded bg-gray-100"
-          />
-        </div>
+    <h1 className="text-3xl font-bold mb-2 text-white">
+      Settings
+    </h1>
 
-        <div>
-          <label className="block text-sm font-medium">Email</label>
-          <input
-            value={user.email}
-            disabled
-            className="w-full border px-3 py-2 rounded bg-gray-100"
-          />
-        </div>
+    <p className="text-white/90 mb-6">
+      Manage your personal information and account preferences
+    </p>
 
-        <div>
-          <label className="block text-sm font-medium">Role</label>
-          <input
-            value={user.role}
-            disabled
-            className="w-full border px-3 py-2 rounded bg-gray-100"
-          />
-        </div>
+    <div className="space-y-5">
 
-        <div>
-          <label className="block text-sm font-medium">Account Created</label>
-          <input
-            value={new Date(user.createdAt).toLocaleDateString()}
-            disabled
-            className="w-full border px-3 py-2 rounded bg-gray-100"
-          />
-        </div>
+      <div>
+        <label className="block text-sm font-semibold text-white mb-1">
+          Full Name
+        </label>
+        <input
+          value={user.name}
+          disabled
+          className="w-full px-4 py-2 rounded-lg bg-white text-gray-900 shadow-md"
+        />
       </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-white mb-1">
+          Email
+        </label>
+        <input
+          value={user.email}
+          disabled
+          className="w-full px-4 py-2 rounded-lg bg-white text-gray-900 shadow-md"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-white mb-1">
+          Role
+        </label>
+        <input
+          value={user.role}
+          disabled
+          className="w-full px-4 py-2 rounded-lg bg-white text-gray-900 shadow-md"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-white mb-1">
+          Account Created
+        </label>
+        <input
+          value={new Date(user.createdAt).toLocaleDateString()}
+          disabled
+          className="w-full px-4 py-2 rounded-lg bg-white text-gray-900 shadow-md"
+        />
+      </div>
+
     </div>
-  );
-}
+  </div>
+);}

@@ -9,11 +9,12 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<"create" | "my">("create");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-200 p-10">
-      <h1 className="text-3xl font-bold text-purple-800 mb-2">
+    <div className="p-10 text-gray-900">
+      
+      <h1 className="text-3xl font-bold mb-2">
         User Dashboard
       </h1>
-      <p className="text-purple-600 mb-8">
+      <p className="text-white/80 mb-8">
         Raise and track your support tickets
       </p>
 
@@ -21,21 +22,22 @@ export default function DashboardPage() {
       <div className="flex gap-4 mb-8">
         <button
           onClick={() => setActiveTab("create")}
-          className={`px-4 py-2 rounded font-medium ${
+          className={`px-5 py-2 rounded-lg font-medium transition ${
             activeTab === "create"
-              ? "bg-purple-700 text-white"
-              : "bg-white text-purple-700"
+              ? "bg-white text-purple-700 shadow-lg"
+              : "bg-white/20 hover:bg-white/30"
           }`}
         >
           Create Ticket
         </button>
 
         <button
-  onClick={() => {
-    console.log("MY BUTTON CLICKED");
-    setActiveTab("my");
-  }}
-
+          onClick={() => setActiveTab("my")}
+          className={`px-5 py-2 rounded-lg font-medium transition ${
+            activeTab === "my"
+              ? "bg-white text-purple-700 shadow-lg"
+              : "bg-white/20 hover:bg-white/30"
+          }`}
         >
           My Tickets
         </button>

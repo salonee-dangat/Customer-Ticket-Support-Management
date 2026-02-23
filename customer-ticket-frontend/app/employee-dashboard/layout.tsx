@@ -13,25 +13,27 @@ export default function EmployeeDashboardLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-indigo-950 via-purple-900 to-pink-900">
+  <div className="min-h-screen flex flex-col bg-gradient-to-br from-pink-200 to-purple-300">
+
+    {/* Header */}
+    <EmployeeHeader onMenuClick={() => setIsSidebarOpen(true)} />
+
+    {/* Sidebar + Content */}
+    <div className="flex flex-1">
 
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col ml-56">
-
-        {/* Header */}
-        <EmployeeHeader onMenuClick={() => setIsSidebarOpen(true)} />
-
-        {/* Page content */}
+      <div className="flex-1 flex flex-col">
         <main className="flex-1 p-6 overflow-y-auto">
           {children}
         </main>
 
-        {/* Footer */}
         <Footer />
       </div>
+
     </div>
-  );
+  </div>
+);
 }

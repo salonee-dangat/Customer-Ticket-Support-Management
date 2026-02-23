@@ -42,12 +42,12 @@ export default function CreateTicketPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-pink-900 text-white p-10">
+    <div className="min-h-screen bg-gradient-to-br from-pink-500 via-purple-600 to-fuchsia-600 text-white p-10">
       <h1 className="text-3xl font-bold mb-6">🎫 Create Ticket</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* LEFT: CREATE FORM */}
-        <div className="bg-white/10 p-6 rounded-2xl backdrop-blur-lg">
+        <div className="bg-white/15 p-6 rounded-2xl backdrop-blur-lg shadow-xl">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -75,26 +75,26 @@ export default function CreateTicketPage() {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full bg-pink-500 hover:bg-pink-600 py-3 rounded-lg"
+            className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:scale-[1.02] transition-all py-3 rounded-lg shadow-lg"
           >
             {loading ? "Creating..." : "Create Ticket"}
           </button>
         </div>
 
         {/* RIGHT: MY TICKETS */}
-        <div className="bg-white/10 p-6 rounded-2xl backdrop-blur-lg">
+        <div className="bg-white/15 p-6 rounded-2xl backdrop-blur-lg shadow-xl">
           <h2 className="text-xl font-semibold mb-4">📊 My Tickets</h2>
 
           {tickets.length === 0 ? (
-            <p className="text-purple-200">No tickets yet</p>
+            <p className="text-white/80">No tickets yet</p>
           ) : (
             tickets.map((t) => (
               <div
                 key={t._id}
-                className="border border-white/20 rounded p-3 mb-3"
+                className="bg-white/20 rounded-xl p-4 mb-3 backdrop-blur-md"
               >
-                <p className="font-semibold">{t.title}</p>
-                <p className="text-sm text-purple-200">
+                <p className="font-semibold text-white">{t.title}</p>
+                <p className="text-sm text-white/80">
                   {t.priority} • {t.status}
                 </p>
               </div>

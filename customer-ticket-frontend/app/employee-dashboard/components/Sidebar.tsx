@@ -20,11 +20,11 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const router = useRouter();
 
   const menu = [
-    { name: "Dashboard", href: "/employee-dashboard", icon: LayoutDashboard },
-    { name: "Tickets", href: "/employee-dashboard/tickets", icon: Ticket },
-    { name: "Profile", href: "/employee-dashboard/profile", icon: User },
-    { name: "Settings", href: "/employee-dashboard/settings", icon: Settings },
-  ];
+  { name: "Dashboard", href: "/employee-dashboard", icon: LayoutDashboard },
+  { name: "Profile", href: "/employee-dashboard/profile", icon: User },
+  { name: "Tickets", href: "/employee-dashboard/tickets", icon: Ticket },
+  { name: "Settings", href: "/employee-dashboard/settings", icon: Settings },
+];
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -34,9 +34,9 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   return (
     <aside
       className={`
-        fixed left-0 top-0 h-full w-56
-        bg-gradient-to-b from-purple-950 to-indigo-950
-        text-white shadow-xl
+        relative w-56 h-auto
+        bg-gradient-to-b from-pink-300 to-purple-400
+        text-gray-900 shadow-xl
         transform transition-transform duration-300
         ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
       `}
@@ -46,9 +46,9 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         <button onClick={() => setIsOpen(false)}>✖</button>
       </div>
 
-      <div className="px-6 py-5 border-b border-white/10">
-        <p className="text-sm text-purple-300">Employee Panel</p>
-        <h2 className="text-lg font-semibold tracking-wide">
+      <div className="px-6 py-5 border-b border-purple-400">
+        <p className="text-sm text-gray-700">Employee Panel</p>
+        <h2 className="text-lg font-semibold tracking-wide text-gray-900">
           Support System
         </h2>
       </div>
@@ -65,8 +65,8 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition
                 ${
                   active
-                    ? "bg-gradient-to-r from-pink-500 to-purple-600 shadow-md"
-                    : "hover:bg-white/10"
+                    ? "bg-white/70 shadow-md"
+                    : "hover:bg-white/40"
                 }`}
               onClick={() => setIsOpen(false)}
             >
@@ -77,10 +77,10 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         })}
       </nav>
 
-      <div className="absolute bottom-6 left-0 w-full px-4">
+      <div className="mt-auto px-4 pb-6">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-300 hover:bg-red-500/10 transition"
+          className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-600 hover:bg-red-500/20 transition"
         >
           <LogOut size={18} />
           <span className="text-sm">Logout</span>
