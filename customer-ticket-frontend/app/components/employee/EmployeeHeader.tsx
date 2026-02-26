@@ -3,7 +3,7 @@
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 type EmployeeHeaderProps = {
   onMenuClick: () => void;
@@ -12,7 +12,9 @@ type EmployeeHeaderProps = {
 export default function EmployeeHeader({ onMenuClick }: EmployeeHeaderProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [employeeName, setEmployeeName] = useState("Employee");
+
   const router = useRouter();
+  const pathname = usePathname(); // 🔥 Detect route change
 
   const fetchNotifications = async () => {
     try {
@@ -25,7 +27,7 @@ export default function EmployeeHeader({ onMenuClick }: EmployeeHeaderProps) {
       const data = await res.json();
 
       const unread = Array.isArray(data?.notifications)
-        ? data.notifications.filter((n: any) => !n.read).length
+        ? data.notifications.filter((n: any) => !n.isRead).length
         : 0;
 
       setUnreadCount(unread);
@@ -65,11 +67,12 @@ export default function EmployeeHeader({ onMenuClick }: EmployeeHeaderProps) {
   useEffect(() => {
     fetchNotifications();
     fetchUser();
-
-    // ✅ Poll for unread notifications every 10 seconds
-    const interval = setInterval(fetchNotifications, 10000);
-    return () => clearInterval(interval);
   }, []);
+
+  // 🔥 IMPORTANT: Refetch when route changes
+  useEffect(() => {
+    fetchNotifications();
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-md px-4 py-3 flex items-center justify-between">

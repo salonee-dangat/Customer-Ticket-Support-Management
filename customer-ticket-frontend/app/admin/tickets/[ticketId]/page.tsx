@@ -6,12 +6,11 @@ import TicketChat from "@/app/components/TicketChat";
 
 export default function TicketPage() {
   const params = useParams();
-  const ticketId = params?.id as string;
 
-  const [ticket, setTicket] = useState<any>({
-    _id: "",
-    messages: [],
-  });
+  // ✅ FIXED: param name must match folder name [ticketId]
+  const ticketId = params?.ticketId as string;
+
+  const [ticket, setTicket] = useState<any>(null);
 
   useEffect(() => {
     if (!ticketId) return;
@@ -41,6 +40,10 @@ export default function TicketPage() {
 
     fetchTicket();
   }, [ticketId]);
+
+  if (!ticket) {
+    return <p>Loading chat...</p>;
+  }
 
   return (
     <div className="h-full">

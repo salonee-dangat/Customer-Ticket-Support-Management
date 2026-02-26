@@ -63,7 +63,6 @@ export default function TicketChat({ ticket }: { ticket: any }) {
         {messages?.map((msg: any, index: number) => {
           if (!msg) return null;
 
-          // Handle both string & object sender
           let senderId = "";
 
           if (typeof msg.sender === "string") {
@@ -117,7 +116,7 @@ export default function TicketChat({ ticket }: { ticket: any }) {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           placeholder="Type a message..."
-          className="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
+          className="flex-1 border rounded-full px-4 py-2 text-black bg-white focus:outline-none focus:ring-2 focus:ring-purple-400"
         />
 
         <button

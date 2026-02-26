@@ -40,7 +40,7 @@ const createTicket = async (req, res) => {
         recipient: admin._id,
         sender: userId,
         ticket: ticket._id,
-        message: "New ticket has been created",
+        message: `New ticket has been created: ${ticket.title}`,
       });
     }
 
@@ -83,7 +83,7 @@ const getSingleTicket = async (req, res) => {
   }
 };
 
-// ✅ Add Message (FINAL CLEAN VERSION)
+// ✅ Add Message
 const addMessageToTicket = async (req, res) => {
   try {
     const { text } = req.body;
@@ -115,7 +115,6 @@ const addMessageToTicket = async (req, res) => {
 
     ticket.messages.push(newMessage);
 
-    // Activity log (safe)
     if (ticket.activityLog) {
       ticket.activityLog.push({
         action: "reply_added",
@@ -126,28 +125,26 @@ const addMessageToTicket = async (req, res) => {
 
     await ticket.save();
 
-    // 🔥 Populate latest message
     const updatedTicket = await Ticket.findById(ticket._id)
       .populate("messages.sender", "_id name role");
 
     const populatedMessage =
       updatedTicket.messages[updatedTicket.messages.length - 1];
 
-    // 🔥 REAL-TIME EMIT
     const io = req.app.get("io");
     if (io) {
       io.to(ticket._id.toString()).emit("newMessage", populatedMessage);
     }
 
-    // 🔥 Notifications
     const ticketOwnerId = ticket.createdBy.toString();
 
+    // 🔥 UPDATED NOTIFICATION TEXT (Only change)
     if (req.user.role === "admin") {
       await Notification.create({
         recipient: ticketOwnerId,
         sender: userId,
         ticket: ticket._id,
-        message: "Admin replied to your ticket",
+        message: `Admin replied to ticket: ${ticket.title}`,
       });
     } else {
       const admins = await User.find({ role: "admin" });
@@ -157,7 +154,7 @@ const addMessageToTicket = async (req, res) => {
           recipient: admin._id,
           sender: userId,
           ticket: ticket._id,
-          message: "User replied to a ticket",
+          message: `User replied to ticket: ${ticket.title}`,
         });
       }
     }

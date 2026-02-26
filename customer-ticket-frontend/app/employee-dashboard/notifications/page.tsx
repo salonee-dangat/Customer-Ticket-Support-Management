@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 interface Notification {
   _id: string;
   message: string;
-  read: boolean;
+  isRead: boolean;
   createdAt: string;
   sender: {
     name: string;
@@ -78,7 +78,7 @@ export default function NotificationsPage() {
         <div
           key={notif._id}
           className={`p-4 mb-3 border rounded ${
-            notif.read ? "bg-gray-100" : "bg-blue-100"
+            notif.isRead ? "bg-gray-100" : "bg-blue-100"
           }`}
           onClick={() => markAsRead(notif._id)}
         >

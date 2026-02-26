@@ -1,6 +1,6 @@
 const Notification = require("../models/Notification");
 
-// Get logged-in user's notifications
+// ✅ Get logged-in user's notifications
 const getMyNotifications = async (req, res) => {
   try {
     const notifications = await Notification.find({
@@ -23,12 +23,15 @@ const getMyNotifications = async (req, res) => {
   }
 };
 
-// Mark notification as read
+// ✅ Mark notification as read
 const markAsRead = async (req, res) => {
   try {
-    const notification = await Notification.findByIdAndUpdate(
-      req.params.id,
-      { isRead: true },
+    const notification = await Notification.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        recipient: req.user.id,
+      },
+      { isRead: true }, // ✅ CORRECT FIELD
       { new: true }
     );
 
@@ -52,21 +55,7 @@ const markAsRead = async (req, res) => {
   }
 };
 
-const getUnreadCount = async (req, res) => {
-  try {
-    const unreadCount = await Notification.countDocuments({
-      recipient: req.user.id,
-      isRead: false,
-    });
-
-    res.status(200).json({ unreadCount });
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching unread count" });
-  }
-};
-
 module.exports = {
   getMyNotifications,
   markAsRead,
-  getUnreadCount,
 };
