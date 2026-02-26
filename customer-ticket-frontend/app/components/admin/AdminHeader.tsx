@@ -11,7 +11,7 @@ type AdminHeaderProps = {
 export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const fetchNotifications = async () => {
+  const fetchUnreadCount = async () => {
     try {
       const res = await fetch("http://localhost:5050/api/notifications", {
         credentials: "include",
@@ -19,27 +19,39 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
 
       const data = await res.json();
 
-const notifications = Array.isArray(data.notifications)
-  ? data.notifications
-  : [];
+      const notifications = Array.isArray(data.notifications)
+        ? data.notifications
+        : [];
 
-const unread = notifications.filter((n: any) => !n.read).length;
-
+      // ✅ SAFER CHECK (handles undefined also)
+      const unread = notifications.filter(
+        (n: any) => n.isRead === false
+      ).length;
 
       setUnreadCount(unread);
     } catch (error) {
-      console.error("Notification fetch error:", error);
+      console.error("Admin notification fetch error:", error);
     }
   };
 
   useEffect(() => {
-    fetchNotifications();
+    fetchUnreadCount();
+
+    const handleUpdate = () => {
+      fetchUnreadCount();
+    };
+
+    window.addEventListener("notificationUpdated", handleUpdate);
+
+    return () => {
+      window.removeEventListener("notificationUpdated", handleUpdate);
+    };
   }, []);
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-md px-4 py-3 flex items-center justify-between">
       
-      {/* Hamburger (mobile) */}
+      {/* Hamburger */}
       <button className="md:hidden" onClick={onMenuClick}>
         <Menu />
       </button>
@@ -48,15 +60,13 @@ const unread = notifications.filter((n: any) => !n.read).length;
         Admin Dashboard
       </h1>
 
-      {/* Right Section */}
       <div className="flex items-center gap-6">
 
-        {/* Notification Bell */}
         <Link href="/admin/notifications" className="relative">
-        
-          🔔
+          <span className="text-xl">🔔</span>
+
           {unreadCount > 0 && (
-            <span className="absolute -top-2 -right-3 bg-red-500 text-white text-xs px-2 rounded-full">
+            <span className="absolute -top-2 -right-3 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
               {unreadCount}
             </span>
           )}

@@ -7,16 +7,24 @@ const messageSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+
     text: {
       type: String,
       required: true,
     },
+
     createdAt: {
       type: Date,
       default: Date.now,
     },
+
+    // ✅ NEW → Seen status
+    seen: {
+      type: Boolean,
+      default: false,
+    },
   },
-  { _id: true } // ✅ allow message id
+  { _id: true }
 );
 
 // ✅ Activity Log Schema
@@ -36,47 +44,30 @@ const activitySchema = new mongoose.Schema(
   { _id: false }
 );
 
-// ✅ Notification Schema
-const notificationSchema = new mongoose.Schema(
-  {
-    recipient: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
-    message: String,
-    isRead: {
-      type: Boolean,
-      default: false,
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-  },
-  { _id: false }
-);
-
+// Ticket Schema
 const ticketSchema = new mongoose.Schema(
   {
     title: String,
     description: String,
     priority: String,
+
     status: {
       type: String,
       default: "Open",
     },
+
     category: String,
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
 
-    // ✅ Embedded messages
+    // ✅ Chat Messages
     messages: [messageSchema],
 
     activityLog: [activitySchema],
-    notifications: [notificationSchema],
   },
   { timestamps: true }
 );

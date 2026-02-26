@@ -28,7 +28,7 @@ const markAsRead = async (req, res) => {
   try {
     const notification = await Notification.findByIdAndUpdate(
       req.params.id,
-      { read: true },
+      { isRead: true },
       { new: true }
     );
 
@@ -52,7 +52,21 @@ const markAsRead = async (req, res) => {
   }
 };
 
+const getUnreadCount = async (req, res) => {
+  try {
+    const unreadCount = await Notification.countDocuments({
+      recipient: req.user.id,
+      isRead: false,
+    });
+
+    res.status(200).json({ unreadCount });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching unread count" });
+  }
+};
+
 module.exports = {
   getMyNotifications,
   markAsRead,
+  getUnreadCount,
 };

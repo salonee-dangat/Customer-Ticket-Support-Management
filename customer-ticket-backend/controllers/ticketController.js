@@ -48,6 +48,7 @@ const createTicket = async (req, res) => {
       success: true,
       ticket,
     });
+
   } catch (error) {
     console.error("CREATE TICKET ERROR:", error);
     res.status(500).json({
@@ -57,9 +58,7 @@ const createTicket = async (req, res) => {
   }
 };
 
-
-
-// ✅ GET SINGLE TICKET (VERY IMPORTANT FOR CHAT ALIGNMENT)
+// ✅ Get Single Ticket
 const getSingleTicket = async (req, res) => {
   try {
     const ticket = await Ticket.findById(req.params.id)
@@ -84,9 +83,7 @@ const getSingleTicket = async (req, res) => {
   }
 };
 
-
-
-/// ✅ Add Message to Ticket
+// ✅ Add Message (FINAL CLEAN VERSION)
 const addMessageToTicket = async (req, res) => {
   try {
     const { text } = req.body;
@@ -113,22 +110,38 @@ const addMessageToTicket = async (req, res) => {
       sender: userId,
       text,
       createdAt: new Date(),
+      seen: false,
     };
 
     ticket.messages.push(newMessage);
 
-    ticket.activityLog.push({
-      action: "reply_added",
-      performedBy: userId,
-      message: "New reply added",
-    });
+    // Activity log (safe)
+    if (ticket.activityLog) {
+      ticket.activityLog.push({
+        action: "reply_added",
+        performedBy: userId,
+        message: "New reply added",
+      });
+    }
 
     await ticket.save();
 
-    // 🔥 NEW: CREATE NOTIFICATION
+    // 🔥 Populate latest message
+    const updatedTicket = await Ticket.findById(ticket._id)
+      .populate("messages.sender", "_id name role");
+
+    const populatedMessage =
+      updatedTicket.messages[updatedTicket.messages.length - 1];
+
+    // 🔥 REAL-TIME EMIT
+    const io = req.app.get("io");
+    if (io) {
+      io.to(ticket._id.toString()).emit("newMessage", populatedMessage);
+    }
+
+    // 🔥 Notifications
     const ticketOwnerId = ticket.createdBy.toString();
 
-    // If admin replied → notify employee
     if (req.user.role === "admin") {
       await Notification.create({
         recipient: ticketOwnerId,
@@ -136,10 +149,7 @@ const addMessageToTicket = async (req, res) => {
         ticket: ticket._id,
         message: "Admin replied to your ticket",
       });
-    }
-
-    // If employee replied → notify all admins
-    if (req.user.role !== "admin") {
+    } else {
       const admins = await User.find({ role: "admin" });
 
       for (let admin of admins) {
@@ -147,17 +157,10 @@ const addMessageToTicket = async (req, res) => {
           recipient: admin._id,
           sender: userId,
           ticket: ticket._id,
-          message: "Employee replied to a ticket",
+          message: "User replied to a ticket",
         });
       }
     }
-
-    // 🔥 Populate sender before sending back
-    const updatedTicket = await Ticket.findById(ticket._id)
-      .populate("messages.sender", "_id name role");
-
-    const populatedMessage =
-      updatedTicket.messages[updatedTicket.messages.length - 1];
 
     res.status(201).json(populatedMessage);
 

@@ -2,12 +2,23 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const notificationRoutes = require("./routes/notificationRoutes");
-
+const http = require("http");
+const { Server } = require("socket.io");
 require("dotenv").config();
 
-// Initialize app
 const app = express();
+const server = http.createServer(app);
+
+// 🔥 SOCKET.IO SETUP
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    credentials: true,
+  },
+});
+
+// Make io available globally
+app.set("io", io);
 
 // Middleware
 app.use(express.json());
@@ -21,28 +32,39 @@ app.use(
 
 app.use(cookieParser());
 
-// Import routes
+// Routes
 const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/adminRoutes");
 const ticketRoutes = require("./routes/ticketRoutes");
 const userRoutes = require("./routes/userRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
-
-// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/tickets", ticketRoutes);
-app.use("/api/users", userRoutes); // ✅ ONLY ONCE
+app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/notifications", notificationRoutes);
 
+// 🔥 SOCKET CONNECTION
+io.on("connection", (socket) => {
+  console.log("🟢 User connected:", socket.id);
 
-// Connect MongoDB
+  socket.on("joinTicketRoom", (ticketId) => {
+    socket.join(ticketId);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("🔴 User disconnected:", socket.id);
+  });
+});
+
+// MongoDB
 mongoose
   .connect(process.env.MONGO_URL)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => console.log("❌ MongoDB Error:", err));
 
 // Start server
-app.listen(5050, () => {
+server.listen(5050, () => {
   console.log("🚀 Server running on port 5050");
 });
