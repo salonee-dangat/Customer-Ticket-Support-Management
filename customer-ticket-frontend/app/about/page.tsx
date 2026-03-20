@@ -45,9 +45,9 @@ export default function AboutPage() {
         <h2 className="text-3xl font-bold text-purple-700 mb-6 text-center">Meet the Team</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { name: "Alice Johnson", role: "Product Manager", emoji: "👩‍💼" },
-            { name: "Bob Smith", role: "Lead Developer", emoji: "💻" },
-            { name: "Clara Lee", role: "UI/UX Designer", emoji: "🎨" },
+            { name: "Neha Shirsath", role: "Product Manager", emoji: "👩‍💼" },
+            { name: "Saloni Dangat", role: "Lead Developer", emoji: "💻" },
+            { name: "Sakshi Rathod", role: "UI/UX Designer", emoji: "🎨" },
           ].map((member, index) => (
             <div
               key={index}

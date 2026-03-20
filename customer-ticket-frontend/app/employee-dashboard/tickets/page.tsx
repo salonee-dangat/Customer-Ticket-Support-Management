@@ -10,14 +10,15 @@ export default function TicketsPage() {
 
   return (
     <div className="space-y-8">
+
       {/* Tabs */}
       <div className="flex gap-4">
         <button
           onClick={() => setActiveTab("create")}
-          className={`px-4 py-2 rounded-lg ${
+          className={`px-5 py-2 rounded-lg font-medium transition ${
             activeTab === "create"
-              ? "bg-purple-700 text-white"
-              : "bg-gray-200"
+              ? "bg-gradient-to-r from-pink-400 to-purple-500 text-white shadow-md"
+              : "bg-white/70 text-gray-800 hover:bg-white"
           }`}
         >
           Create Ticket
@@ -25,24 +26,22 @@ export default function TicketsPage() {
 
         <button
           onClick={() => setActiveTab("my")}
-          className={`px-4 py-2 rounded-lg ${
+          className={`px-5 py-2 rounded-lg font-medium transition ${
             activeTab === "my"
-              ? "bg-purple-700 text-white"
-              : "bg-gray-200"
+              ? "bg-gradient-to-r from-purple-400 to-fuchsia-500 text-white shadow-md"
+              : "bg-white/70 text-gray-800 hover:bg-white"
           }`}
         >
           My Tickets
         </button>
       </div>
 
-      {/* Conditional Rendering */}
+      {/* Content */}
       {activeTab === "create" && (
         <TicketForm onCreated={() => setRefreshKey((k) => k + 1)} />
       )}
 
-      {activeTab === "my" && (
-        <MyTickets refreshKey={refreshKey} />
-      )}
+      {activeTab === "my" && <MyTickets refreshKey={refreshKey} />}
     </div>
   );
 }
